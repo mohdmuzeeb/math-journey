@@ -1,0 +1,40 @@
+# Math Journey
+
+A Grade 8 math learning web app: one Spring Boot jar serves the React app and the `/api` on `http://127.0.0.1:8080`.
+
+## Prerequisites
+
+- **JDK 25** (or newer). `start.sh` checks this and prints install instructions if Java is missing.
+- Nothing else: the Maven build uses the bundled wrapper (`./mvnw`) and downloads its own Node 22.
+
+## Run
+
+```sh
+./start.sh          # builds the jar on first run, starts it, opens the browser
+./start.sh --demo   # same, with the demo lesson (Spring profile "demo")
+```
+
+The app only listens on `127.0.0.1`, so it is not reachable from other machines on the network.
+
+## Build and test
+
+```sh
+./mvnw verify
+```
+
+This builds the frontend, runs the Vitest tests and the backend tests, and produces `backend/target/math-journey.jar`.
+
+## Development mode
+
+Run the backend and the Vite dev server side by side; Vite proxies `/api` to Spring on port 8080.
+
+```sh
+./mvnw -pl backend spring-boot:run -Dspring-boot.run.profiles=demo   # terminal 1 (drop the flag for no demo)
+cd frontend && npm install && npm run dev                            # terminal 2, then open the URL Vite prints
+```
+
+## Layout
+
+- `backend/` – Spring Boot app (`app.mathjourney.*`)
+- `frontend/` – React + TypeScript (Vite, Vitest)
+- `content/` – lesson content, packaged into the jar under `content/`; `content/demo/` is loaded only with the `demo` profile

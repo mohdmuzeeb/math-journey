@@ -1,0 +1,6 @@
+target/
+node_modules/
+frontend/dist/
+frontend/node/
+.idea/
+.DS_Store
