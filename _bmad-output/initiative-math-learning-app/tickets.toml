@@ -1,0 +1,63 @@
+# Epics of initiative-math-learning-app, in build order.
+
+[[epic]]
+id = 1
+slug = "epic-foundation"
+title = "App runs and the lesson pipeline is trustworthy"
+covers = ["CAP-12", "CAP-11", "CAP-2"]
+
+[[epic]]
+id = 2
+slug = "epic-daily-session"
+title = "A full daily session that remembers"
+covers = ["CAP-1", "CAP-4", "CAP-7", "CAP-8", "CAP-11", "CAP-2"]
+after = [{ epic = 1, needs = "scaffold, content pipeline, number-line kind, learner_profile" }]
+
+[[epic]]
+id = 3
+slug = "epic-help-and-lumi"
+title = "Help when stuck, Lumi beside her"
+covers = ["CAP-3", "CAP-9"]
+after = [{ epic = 2, needs = "item state, attempts API, session screens" }]
+
+[[epic]]
+id = 4
+slug = "epic-journey-map"
+title = "The storybook map, first run and settings"
+covers = ["CAP-5", "CAP-6", "CAP-10", "CAP-2"]
+after = [{ epic = 2, needs = "sessions, progress, streak, home journey card, replay-session API, sound playback" }, { epic = 3, needs = "Lumi illustration, companion-name use" }]
+
+[[epic]]
+id = 5
+slug = "epic-land-numbers"
+title = "Numbers land ready for Maaheem"
+covers = ["CAP-11", "CAP-2"]
+after = [{ epic = 2, needs = "daily sessions" }, { epic = 3, needs = "walkthrough view" }, { epic = 4, needs = "map, onboarding, sort-match kind" }]
+
+[[epic]]
+id = 6
+slug = "epic-land-equations"
+title = "Equations land with the balance scale"
+covers = ["CAP-11", "CAP-2"]
+after = [{ epic = 3, needs = "walkthrough view each kind supports" }, { epic = 4, needs = "map and unlock" }, { epic = 5, needs = "Numbers complete so Equations unlocks" }]
+
+[[epic]]
+id = 7
+slug = "epic-land-functions"
+title = "Functions land with the coordinate graph"
+covers = ["CAP-11", "CAP-2"]
+after = [{ epic = 3, needs = "walkthrough view" }, { epic = 4, needs = "map and unlock" }, { epic = 6, needs = "Equations complete so Functions unlocks" }]
+
+[[epic]]
+id = 8
+slug = "epic-land-shapes"
+title = "Shapes land with transforms and volume"
+covers = ["CAP-11", "CAP-2"]
+after = [{ epic = 3, needs = "walkthrough view" }, { epic = 4, needs = "map and unlock" }, { epic = 7, needs = "Functions complete so Shapes unlocks" }]
+
+[[epic]]
+id = 9
+slug = "epic-land-data"
+title = "Data land with scatter plots"
+covers = ["CAP-11", "CAP-2"]
+after = [{ epic = 3, needs = "walkthrough view" }, { epic = 4, needs = "map and unlock" }, { epic = 8, needs = "Shapes complete so Data unlocks" }]

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Key Screen · Activity</title>
+<style>
+/* Governed by: DESIGN.md Components (drag tile, drop zone, feedback strip, Lumi bubble, progress bar, "I'm stuck" button)
+   EXPERIENCE.md Component Patterns, State Patterns ("Wrong answer, tries 1 and 2", "Wrong answer, try 3"), Key Flow 3 (Stuck).
+   Tokens: Orchid Pop. primary #A21CAF, accent #22D3EE, surface #FDF4FF, ink #1F1235, muted #7A6A8A, border #F5D0FE,
+   nudge #FEF3C7/#92400E, success #DCFCE7/#166534 */
+* { box-sizing: border-box; }
+body { margin: 0; padding: 32px 24px 80px; background: #ececf0; color: #1F1235;
+       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+h1 { margin: 0 0 6px; font-size: 26px; }
+.intro { color: #52525b; max-width: 820px; line-height: 1.5; margin: 0 0 28px; }
+.state { max-width: 1040px; margin: 0 auto 48px; }
+.state h2 { font-size: 18px; margin: 0 0 4px; }
+.state p.cap { margin: 0 0 12px; color: #52525b; }
+.browser { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(31,18,53,.15); }
+.chrome { height: 34px; background: #f4f4f5; display: flex; align-items: center; gap: 7px; padding: 0 14px; border-bottom: 1px solid #e4e4e7; }
+.chrome i { width: 11px; height: 11px; border-radius: 50%; background: #d4d4d8; display: block; }
+.screen { position: relative; background: #FDF4FF; min-height: 600px; padding: 0 28px 28px; }
+.top { display: flex; align-items: center; gap: 18px; padding: 16px 0; }
+.back { font-size: 13px; font-weight: 700; color: #A21CAF; white-space: nowrap; }
+.prog { flex: 1; display: flex; gap: 6px; }
+.seg { flex: 1; height: 8px; border-radius: 999px; background: #F5D0FE; overflow: hidden; }
+.seg i { display: block; height: 100%; background: #22D3EE; }
+.seglbl { display: flex; gap: 6px; font-size: 11px; color: #7A6A8A; font-weight: 700; margin-top: 4px; }
+.seglbl span { flex: 1; }
+.part { font-size: 13px; font-weight: 700; color: #7A6A8A; white-space: nowrap; }
+.card { max-width: 880px; margin: 8px auto 0; background: #fff; border-radius: 24px; padding: 28px; box-shadow: 0 12px 32px rgba(162,28,175,.18); }
+.card h3 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+.card .sub { margin: 0 0 22px; color: #7A6A8A; }
+.scale { display: grid; grid-template-columns: 1fr 60px 1fr; align-items: center; gap: 0; margin-bottom: 18px; }
+.pan { min-height: 92px; border: 2px dashed #A21CAF; border-radius: 14px; background: #FDF4FF; display: flex; gap: 10px; align-items: center; justify-content: center; padding: 12px; }
+.pan.hover { background: #FAE8FF; box-shadow: 0 0 0 4px rgba(162,28,175,.12); }
+.eqs { text-align: center; font-size: 30px; font-weight: 800; color: #A21CAF; }
+.beam { height: 8px; background: #F5D0FE; border-radius: 999px; margin: -6px 0 18px; }
+.tile { min-width: 52px; height: 52px; padding: 0 14px; border-radius: 8px; border: 2px solid #F5D0FE; background: #fff; display: inline-grid; place-items: center; font-size: 22px; font-weight: 700; }
+.tile.x { border-color: #A21CAF; }
+.tile.drag { background: #A21CAF; color: #fff; border-color: #A21CAF; box-shadow: 0 8px 20px rgba(162,28,175,.30); transform: translate(10px,-14px) rotate(-3deg); }
+.tray { display: flex; gap: 10px; align-items: center; justify-content: center; padding: 14px; border-radius: 14px; background: #fff; border: 2px solid #F5D0FE; margin-bottom: 18px; }
+.tray small { color: #7A6A8A; font-weight: 700; margin-right: 6px; }
+.fb { padding: 12px 16px; border-radius: 14px; margin-bottom: 18px; font-size: 15px; }
+.fb.nudge { background: #FEF3C7; color: #92400E; }
+.actions { display: flex; gap: 12px; justify-content: space-between; }
+.btn { padding: 13px 26px; border-radius: 999px; font-weight: 800; font-size: 15px; display: inline-block; }
+.btn.pri { background: #A21CAF; color: #fff; }
+.btn.sec { background: #FDF4FF; color: #A21CAF; border: 2px solid #F5D0FE; }
+.lumi { position: absolute; left: 28px; bottom: 28px; display: flex; gap: 10px; align-items: flex-end; }
+.face { position: relative; width: 58px; height: 58px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 30px; border: 3px solid #F5D0FE; }
+.face .dot { position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; border-radius: 50%; background: #22D3EE; border: 2px solid #fff; box-shadow: 0 0 0 5px rgba(34,211,238,.25); }
+.speech { background: #fff; border-radius: 24px 24px 24px 6px; padding: 12px 16px; max-width: 320px; box-shadow: 0 4px 14px rgba(162,28,175,.14); font-size: 15px; line-height: 1.45; }
+.speech b { color: #A21CAF; }
+/* walkthrough overlay */
+.dim { position: absolute; inset: 0; background: rgba(31,18,53,.35); }
+.walk { position: absolute; left: 50%; top: 70px; transform: translateX(-50%); width: 640px; background: #fff; border-radius: 24px; padding: 26px 28px; box-shadow: 0 20px 50px rgba(31,18,53,.3); }
+.walk .hd { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+.walk .hd .face { width: 46px; height: 46px; font-size: 24px; }
+.walk .hd h3 { margin: 0; font-size: 19px; }
+.walk .hd small { color: #7A6A8A; display: block; font-weight: 700; }
+.steps { list-style: none; margin: 0 0 18px; padding: 0; }
+.steps li { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 14px; margin-bottom: 6px; color: #7A6A8A; }
+.steps li .n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 800; background: #F5D0FE; color: #A21CAF; flex: none; }
+.steps li.done { color: #1F1235; }
+.steps li.done .n { background: #A21CAF; color: #fff; }
+.steps li.now { background: #FDF4FF; color: #1F1235; font-weight: 700; border: 2px solid #22D3EE; }
+.steps li.now .n { background: #22D3EE; color: #1F1235; }
+.steps li.later { opacity: .55; }
+.mini { font-size: 22px; font-weight: 800; text-align: center; padding: 14px; background: #FDF4FF; border-radius: 14px; margin-bottom: 18px; letter-spacing: .02em; }
+.mini .gone { text-decoration: line-through; color: #A21CAF; opacity: .6; }
+.note { margin-top: 12px; font-size: 13px; color: #52525b; }
+</style>
+</head>
+<body>
+<h1>Key screen: the activity</h1>
+<p class="intro">The screen where Maaheem spends most of her hour. It shows Flow 3 (Stuck) from EXPERIENCE.md in two states: <strong>after her 2nd wrong try</strong>, with Lumi's hint waiting to be clicked, and <strong>after her 3rd</strong>, when Lumi walks through a similar example step by step. The butterfly emoji is a placeholder for the Lumi illustration.</p>
+
+<!-- ============ STATE 1 ============ -->
+<section class="state">
+  <h2>State 1: New idea, 2nd wrong try, hint waiting</h2>
+  <p class="cap">She is dragging a "+5" tile onto the left side of the scale. The amber nudge from her first try is still showing. Lumi has popped up with a hint, and the aqua dot shows it hasn't been opened yet.</p>
+  <div class="browser"><div class="chrome"><i></i><i></i><i></i></div>
+    <div class="screen">
+      <div class="top">
+        <span class="back">← Back to map</span>
+        <div style="flex:1">
+          <div class="prog"><span class="seg"><i style="width:100%"></i></span><span class="seg"><i style="width:45%"></i></span><span class="seg"></span></div>
+          <div class="seglbl"><span>Warm-up ✓</span><span>New idea</span><span>Wrap-up</span></div>
+        </div>
+        <span class="part">Equations · Day 12</span>
+      </div>
+      <div class="card">
+        <h3>Balance the scale</h3>
+        <p class="sub">Drag tiles onto <em>both</em> sides until x is alone. Whatever you do to one side, do to the other.</p>
+        <div class="scale">
+          <div class="pan hover"><span class="tile x">3x</span><span class="tile">−5</span></div>
+          <div class="eqs">=</div>
+          <div class="pan"><span class="tile">10</span></div>
+        </div>
+        <div class="beam"></div>
+        <div class="tray"><small>Tiles:</small><span class="tile drag">+5</span><span class="tile">+5</span><span class="tile">−5</span><span class="tile">÷3</span></div>
+        <div class="fb nudge">Not quite. What did you do to the left side?</div>
+        <div class="actions"><span class="btn sec">I'm stuck</span><span class="btn pri">Check</span></div>
+      </div>
+      <div class="lumi"><span class="face">🦋<span class="dot"></span></span><span class="speech"><b>Hint:</b> get rid of the −5 first. What undoes subtracting 5?</span></div>
+    </div>
+  </div>
+  <p class="note">Shown: drop zone hover, a tile being dragged, amber nudge (never red), Lumi's unread dot, "I'm stuck" always visible, and the progress bar with the warm-up done.</p>
+</section>
+
+<!-- ============ STATE 2 ============ -->
+<section class="state">
+  <h2>State 2: 3rd wrong try, Lumi's walkthrough</h2>
+  <p class="cap">Lumi: "Let's walk through one together." She clicks Next through each step of a <em>similar</em> problem and watches the tiles move. Then she gets one of her own to try.</p>
+  <div class="browser"><div class="chrome"><i></i><i></i><i></i></div>
+    <div class="screen">
+      <div class="top">
+        <span class="back">← Back to map</span>
+        <div style="flex:1">
+          <div class="prog"><span class="seg"><i style="width:100%"></i></span><span class="seg"><i style="width:45%"></i></span><span class="seg"></span></div>
+          <div class="seglbl"><span>Warm-up ✓</span><span>New idea</span><span>Wrap-up</span></div>
+        </div>
+        <span class="part">Equations · Day 12</span>
+      </div>
+      <div class="card" style="opacity:.5">
+        <h3>Balance the scale</h3>
+        <p class="sub">Drag tiles onto both sides until x is alone.</p>
+        <div class="scale"><div class="pan"><span class="tile x">3x</span><span class="tile">−5</span></div><div class="eqs">=</div><div class="pan"><span class="tile">10</span></div></div>
+      </div>
+      <div class="dim"></div>
+      <div class="walk">
+        <div class="hd"><span class="face">🦋</span><div><small>Lumi · let's walk through one together</small><h3>Solve 2x − 4 = 6</h3></div></div>
+        <div class="mini">2x <span class="gone">− 4 + 4</span> = 6 + 4 &nbsp;→&nbsp; 2x = 10</div>
+        <ol class="steps">
+          <li class="done"><span class="n">1</span>Find what's stuck to x: it's −4.</li>
+          <li class="now"><span class="n">2</span>Add 4 to <em>both</em> sides. The −4 and +4 cancel out!</li>
+          <li class="later"><span class="n">3</span>Now 2x = 10. Divide both sides by 2.</li>
+          <li class="later"><span class="n">4</span>x = 5. Check it: 2 × 5 − 4 = 6 ✓</li>
+        </ol>
+        <div class="actions"><span class="btn sec">Back</span><span class="btn pri">Next →</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="note">After step 4, Lumi says "Your turn, a similar one" and she gets 4x − 2 = 10. The concept is quietly added to her future warm-ups. Only one overlay is ever open at a time.</p>
+</section>
+</body>
+</html>

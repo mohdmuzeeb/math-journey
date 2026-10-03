@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Directions · Round 1</title>
+<!-- Orchid Pop palette (chosen): bg #FFFFFF · surface #FDF4FF · primary #A21CAF · primary-strong #86198F
+     accent #22D3EE · text #1F1235 · muted #7A6A8A · border #F5D0FE · success #16A34A / #DCFCE7 -->
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 24px 80px; background: #ececf0; color: #1F1235;
+         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  h1 { margin: 0 0 6px; font-size: 28px; }
+  .intro { max-width: 820px; color: #52525b; line-height: 1.5; margin: 0 0 32px; }
+  .dir { max-width: 1040px; margin: 0 auto 56px; }
+  .dir > h2 { margin: 0 0 4px; font-size: 22px; }
+  .why { margin: 0 0 14px; color: #52525b; line-height: 1.5; max-width: 860px; }
+  .browser { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(31,18,53,.15); }
+  .chrome { height: 34px; background: #f4f4f5; display: flex; align-items: center; gap: 7px; padding: 0 14px; border-bottom: 1px solid #e4e4e7; }
+  .chrome i { width: 11px; height: 11px; border-radius: 50%; background: #d4d4d8; display: block; }
+  .chrome span { margin-left: 14px; font-size: 12px; color: #71717a; background: #fff; padding: 3px 12px; border-radius: 6px; }
+  .state { margin-top: 12px; font-size: 13px; color: #52525b; }
+
+  /* ---------- A · BOUTIQUE MINIMAL ---------- */
+  .a { padding: 0; font-size: 14px; }
+  .a nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 36px; border-bottom: 1px solid #F5D0FE; }
+  .a .logo { font-weight: 800; letter-spacing: .18em; font-size: 15px; }
+  .a .navr { display: flex; gap: 22px; align-items: center; color: #7A6A8A; font-size: 13px; }
+  .a .inbox { position: relative; color: #1F1235; font-weight: 600; }
+  .a .inbox b { position: absolute; top: -8px; right: -14px; background: #A21CAF; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 999px; }
+  .a main { padding: 28px 36px 36px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; }
+  .a .eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #A21CAF; font-weight: 700; }
+  .a h3 { font-size: 30px; font-weight: 300; margin: 6px 0 4px; letter-spacing: -.01em; }
+  .a h3 strong { font-weight: 800; }
+  .a .lede { color: #7A6A8A; margin: 0 0 22px; }
+  .a .plan { border-top: 1px solid #1F1235; }
+  .a .step { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #F5D0FE; }
+  .a .step em { font-style: normal; color: #7A6A8A; }
+  .a .cta { display: inline-block; margin-top: 22px; background: #1F1235; color: #fff; padding: 14px 34px; font-weight: 700; letter-spacing: .08em; font-size: 13px; text-transform: uppercase; }
+  .a .realms { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .a .realm { border: 1px solid #F5D0FE; padding: 12px; }
+  .a .img { height: 68px; background: linear-gradient(135deg, #FDF4FF, #F5D0FE); margin-bottom: 8px; display: grid; place-items: center; font-size: 22px; }
+  .a .realm.on .img { background: linear-gradient(135deg, #A21CAF, #22D3EE); }
+  .a .realm small { color: #7A6A8A; display: block; }
+  .a .pct { height: 3px; background: #F5D0FE; margin-top: 8px; } .a .pct i { display: block; height: 100%; background: #A21CAF; }
+  .a .locked { opacity: .45; }
+  .a .msg { margin-top: 16px; border: 1px solid #F5D0FE; padding: 12px 14px; display: flex; gap: 10px; align-items: center; }
+  .a .msg .d { width: 8px; height: 8px; border-radius: 50%; background: #22D3EE; flex: none; }
+
+  /* ---------- B · STORYBOOK MAP ---------- */
+  .b { background: #FDF4FF; font-size: 15px; }
+  .b nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 28px; }
+  .b .logo { font-weight: 800; font-size: 20px; color: #A21CAF; }
+  .b .pill { background: #fff; border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 13px; box-shadow: 0 2px 8px rgba(162,28,175,.12); }
+  .b .wrap { position: relative; padding: 0 28px 28px; }
+  .b svg { width: 100%; height: 340px; display: block; }
+  .b .card { position: absolute; right: 44px; top: 28px; width: 290px; background: #fff; border-radius: 24px; padding: 18px; box-shadow: 0 12px 32px rgba(162,28,175,.18); }
+  .b .card h4 { margin: 0 0 4px; font-size: 19px; }
+  .b .card p { margin: 0 0 12px; color: #7A6A8A; font-size: 14px; }
+  .b .card ol { margin: 0 0 14px; padding-left: 20px; font-size: 14px; line-height: 1.8; }
+  .b .go { display: block; text-align: center; background: #A21CAF; color: #fff; border-radius: 999px; padding: 12px; font-weight: 800; }
+  .b .bubble { position: absolute; left: 44px; bottom: 36px; display: flex; gap: 10px; align-items: flex-end; }
+  .b .face { width: 54px; height: 54px; border-radius: 50%; background: #22D3EE; display: grid; place-items: center; font-size: 26px; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+  .b .speech { background: #fff; border-radius: 18px 18px 18px 4px; padding: 10px 14px; max-width: 300px; font-size: 14px; box-shadow: 0 4px 14px rgba(162,28,175,.14); }
+  .b .speech b { color: #A21CAF; }
+
+  /* ---------- C · QUEST DASHBOARD ---------- */
+  .c { background: #fff; font-size: 15px; }
+  .c nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px; background: #1F1235; color: #fff; }
+  .c .logo { font-weight: 900; font-size: 18px; letter-spacing: .02em; }
+  .c .stats { display: flex; gap: 10px; }
+  .c .stat { background: rgba(255,255,255,.1); border-radius: 12px; padding: 6px 12px; font-weight: 800; font-size: 13px; }
+  .c main { padding: 24px 28px 28px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .c .hero { grid-column: span 2; background: linear-gradient(135deg, #A21CAF, #7E22CE); color: #fff; border-radius: 20px; padding: 22px; }
+  .c .hero h4 { margin: 4px 0 6px; font-size: 26px; font-weight: 900; }
+  .c .hero p { margin: 0 0 16px; opacity: .9; }
+  .c .tiles { display: flex; gap: 10px; margin-bottom: 16px; }
+  .c .t { flex: 1; background: rgba(255,255,255,.14); border-radius: 14px; padding: 10px; font-size: 13px; }
+  .c .t b { display: block; font-size: 18px; }
+  .c .t.now { background: #22D3EE; color: #1F1235; }
+  .c .start { display: inline-block; background: #fff; color: #A21CAF; font-weight: 900; padding: 12px 26px; border-radius: 14px; }
+  .c .side { background: #FDF4FF; border-radius: 20px; padding: 18px; }
+  .c .side h5 { margin: 0 0 10px; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: #A21CAF; }
+  .c .note { background: #fff; border-radius: 14px; padding: 10px 12px; margin-bottom: 8px; font-size: 14px; border: 2px solid #F5D0FE; }
+  .c .note.new { border-color: #22D3EE; }
+  .c .realm { background: #FDF4FF; border-radius: 18px; padding: 14px; display: flex; gap: 12px; align-items: center; }
+  .c .ring { width: 48px; height: 48px; border-radius: 50%; flex: none; display: grid; place-items: center; font-weight: 900; font-size: 12px; }
+  .c .realm small { color: #7A6A8A; display: block; }
+  .c .realm.lock { opacity: .5; }
+</style>
+</head>
+<body>
+<h1>Pick a style</h1>
+<p class="intro">All three use the <strong>Orchid Pop</strong> colors she chose and show the same screen: the home page she sees at 6pm. It has today's three-part plan, the five lands of the journey (one per Grade 8 math area), her streak and a new message from her companion. They differ in <em>personality</em>: how busy, how bold, how "storybook." Land names and the ✦ companion are placeholders.</p>
+
+<!-- ================= A ================= -->
+<section class="dir">
+  <h2>A · Boutique Minimal</h2>
+  <p class="why">The most like Shein: lots of white space, thin lines, elegant thin-and-bold headings, and the lands laid out like a product grid. Grown-up and calm, with the fantasy kept subtle. It is the quickest of the three to build.</p>
+  <div class="browser"><div class="chrome"><i></i><i></i><i></i><span>mathjourney.app</span></div>
+    <div class="a">
+      <nav><span class="logo">MATH JOURNEY</span><span class="navr"><span>Map</span><span>Progress</span><span class="inbox">Messages<b>2</b></span><span>🔥 5 days</span></span></nav>
+      <main>
+        <div>
+          <span class="eyebrow">Day 12 · Equations</span>
+          <h3>Good evening. <strong>Ready for today?</strong></h3>
+          <p class="lede">One hour, three parts. You'll balance your first two-step equation.</p>
+          <div class="plan">
+            <div class="step"><span>1 · Warm-up review</span><em>8 quick items · 15 min</em></div>
+            <div class="step"><span>2 · New idea: two-step equations</span><em>30 min</em></div>
+            <div class="step"><span>3 · Wrap-up challenge</span><em>15 min</em></div>
+          </div>
+          <span class="cta">Start today's journey</span>
+          <div class="msg"><span class="d"></span><span><strong>New message from your companion</strong>: tap to open</span></div>
+        </div>
+        <div class="realms">
+          <div class="realm"><div class="img">✦</div><strong>Numbers</strong><small>Complete</small><div class="pct"><i style="width:100%"></i></div></div>
+          <div class="realm on"><div class="img" style="color:#fff">✦</div><strong>Equations</strong><small>You are here · 3 of 8</small><div class="pct"><i style="width:38%"></i></div></div>
+          <div class="realm locked"><div class="img">🔒</div><strong>Functions</strong><small>Locked</small><div class="pct"></div></div>
+          <div class="realm locked"><div class="img">🔒</div><strong>Shapes</strong><small>Locked</small><div class="pct"></div></div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <p class="state">State shown: unread messages (badge "2"), finished land, current land, locked lands.</p>
+</section>
+
+<!-- ================= B ================= -->
+<section class="dir">
+  <h2>B · Storybook Map</h2>
+  <p class="why">The journey is the home screen: a winding path through five lands, with her position marked and the companion speaking from the corner. Soft, rounded and illustrated, the most like a fantasy book. It takes more artwork to build, and it's the most magical of the three.</p>
+  <div class="browser"><div class="chrome"><i></i><i></i><i></i><span>mathjourney.app</span></div>
+    <div class="b">
+      <nav><span class="logo">✦ Math Journey</span><span style="display:flex;gap:10px"><span class="pill">🔥 5-day streak</span><span class="pill">💌 2 new</span></span></nav>
+      <div class="wrap">
+        <svg viewBox="0 0 980 340" preserveAspectRatio="none" aria-label="Journey map">
+          <path d="M40 300 C 180 300, 160 190, 300 190 S 460 290, 560 220 S 640 90, 600 60" fill="none" stroke="#F5D0FE" stroke-width="14" stroke-linecap="round"/>
+          <path d="M40 300 C 180 300, 160 190, 300 190 S 420 270, 470 255" fill="none" stroke="#A21CAF" stroke-width="14" stroke-linecap="round"/>
+          <circle cx="70" cy="300" r="26" fill="#A21CAF"/><text x="70" y="306" fill="#fff" font-size="16" text-anchor="middle" font-weight="700">✓</text>
+          <text x="70" y="250" fill="#1F1235" font-size="14" text-anchor="middle" font-weight="700">Numbers</text>
+          <circle cx="300" cy="190" r="26" fill="#A21CAF"/><text x="300" y="196" fill="#fff" font-size="16" text-anchor="middle" font-weight="700">✓</text>
+          <circle cx="470" cy="255" r="34" fill="#22D3EE" stroke="#fff" stroke-width="5"/><text x="470" y="263" fill="#1F1235" font-size="22" text-anchor="middle">✦</text>
+          <text x="470" y="312" fill="#1F1235" font-size="14" text-anchor="middle" font-weight="800">Equations · you are here</text>
+          <circle cx="575" cy="170" r="22" fill="#fff" stroke="#F5D0FE" stroke-width="4"/><text x="575" y="176" font-size="14" text-anchor="middle">🔒</text>
+          <circle cx="600" cy="60" r="22" fill="#fff" stroke="#F5D0FE" stroke-width="4"/><text x="600" y="66" font-size="14" text-anchor="middle">🔒</text>
+          <text x="300" y="150" fill="#7A6A8A" font-size="13" text-anchor="middle">Stop 2</text>
+        </svg>
+        <div class="card">
+          <h4>Today's journey · Day 12</h4>
+          <p>About an hour. Your first two-step equations!</p>
+          <ol><li>Warm-up review (8 quick ones)</li><li>New: two-step equations</li><li>Wrap-up challenge</li></ol>
+          <span class="go">Let's go ✦</span>
+        </div>
+        <div class="bubble"><span class="face">✦</span><span class="speech"><b>Psst!</b> I found something about balancing scales. Tap me to read it.</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="state">State shown: finished stops, current stop highlighted, locked stops, companion speech bubble waiting to be clicked.</p>
+</section>
+
+<!-- ================= C ================= -->
+<section class="dir">
+  <h2>C · Quest Dashboard</h2>
+  <p class="why">Bold and game-like: chunky rounded cards, heavy headings, progress rings for each land and a message inbox in a side panel. High energy, everything in view at once. The fantasy comes from words and progress rather than artwork.</p>
+  <div class="browser"><div class="chrome"><i></i><i></i><i></i><span>mathjourney.app</span></div>
+    <div class="c">
+      <nav><span class="logo">✦ MATH QUEST</span><span class="stats"><span class="stat">🔥 5</span><span class="stat">⭐ 340</span><span class="stat">Day 12</span></span></nav>
+      <main>
+        <div class="hero">
+          <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;opacity:.85;font-weight:800">Today's quest</span>
+          <h4>Master two-step equations</h4>
+          <p>Three parts, about an hour. Your companion is waiting.</p>
+          <div class="tiles"><span class="t now"><b>15m</b>Warm-up · 8 reviews</span><span class="t"><b>30m</b>New idea</span><span class="t"><b>15m</b>Wrap-up</span></div>
+          <span class="start">Start quest →</span>
+        </div>
+        <div class="side">
+          <h5>Messages</h5>
+          <div class="note new">✦ <strong>New!</strong> A tip about balancing…</div>
+          <div class="note new">✦ <strong>New!</strong> You're 3 days from a badge</div>
+          <div class="note" style="color:#7A6A8A">✦ Great job yesterday!</div>
+        </div>
+        <div class="realm"><span class="ring" style="background:conic-gradient(#A21CAF 100%, #F5D0FE 0)"><span style="background:#FDF4FF;width:36px;height:36px;border-radius:50%;display:grid;place-items:center">✓</span></span><span><strong>Numbers</strong><small>Complete</small></span></div>
+        <div class="realm"><span class="ring" style="background:conic-gradient(#22D3EE 38%, #F5D0FE 0)"><span style="background:#FDF4FF;width:36px;height:36px;border-radius:50%;display:grid;place-items:center">38%</span></span><span><strong>Equations</strong><small>In progress</small></span></div>
+        <div class="realm lock"><span class="ring" style="background:#F5D0FE">🔒</span><span><strong>Functions</strong><small>Locked</small></span></div>
+      </main>
+    </div>
+  </div>
+  <p class="state">State shown: unread vs. read messages, finished, in-progress and locked lands, the current part highlighted.</p>
+</section>
+</body>
+</html>
