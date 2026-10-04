@@ -228,7 +228,11 @@ final class ContentLoader {
 		}
 	}
 
-	private static SchemaRegistry schemaRegistry(Map<String, String> schemaFiles) {
+	/**
+	 * The registry the loader validates with, holding {@code schemaFiles} (file name to text) under
+	 * {@link #SCHEMA_BASE}. Package-private so tests validate exactly as the loader does.
+	 */
+	static SchemaRegistry schemaRegistry(Map<String, String> schemaFiles) {
 		Map<String, String> schemas = new HashMap<>();
 		schemaFiles.forEach((name, text) -> schemas.put(SCHEMA_BASE + name, text));
 		SchemaRegistryConfig config = SchemaRegistryConfig.builder().pathType(PathType.JSON_PATH).build();
@@ -342,14 +346,16 @@ final class ContentLoader {
 	}
 
 	/**
-	 * Runs one verification. Each problem is recorded at {@code <basePath>.answer} or
-	 * {@code <basePath>.acceptedAnswers}, by its field, with the message prefixed by the item id.
+	 * Runs one verification. Each problem is recorded at {@code <basePath>.payload},
+	 * {@code <basePath>.answer} or {@code <basePath>.acceptedAnswers}, by its field, with the message
+	 * prefixed by the item id.
 	 */
 	private static void verifyAnswers(AnswerVerifier verifier, JsonNode payload, JsonNode answer, JsonNode accepted,
 			String itemId, String file, String basePath, List<ContentError> errors) {
 		String prefix = "item \"" + itemId + "\": ";
 		for (AnswerProblem problem : verifier.verify(payload, answer, accepted)) {
 			String path = basePath + switch (problem.field()) {
+				case PAYLOAD -> ".payload";
 				case ANSWER -> ".answer";
 				case ACCEPTED_ANSWERS -> ".acceptedAnswers";
 			};

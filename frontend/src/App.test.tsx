@@ -52,6 +52,8 @@ describe('App', () => {
     expect(strip()).toBeNull()
 
     const point = layoutNumberLine()
+    // The point waits beside the line, not on 0, until her first drop.
+    expect(point.getAttribute('aria-label')).toBe('Number line point, not placed yet')
     await pointerDrag(point, tickClientX(4, LAST)) // value 1.0
     expect(check.disabled).toBe(false)
     expect(strip()).toBeNull() // a drop is not judged

@@ -95,7 +95,8 @@
 				<!--
 					Build order (AD-7): compile -> test (OpenApiExportTest writes ../frontend/openapi.json)
 					-> prepare-package (generate API types, tsc, vite build into target/classes/static, AD-1)
-					-> package (jar) -> integration-test (Vitest). With -DskipTests the committed openapi.json is used.
+					-> package (jar) -> integration-test (Vitest on jsdom, then the Chromium smoke test).
+					With -DskipTests the committed openapi.json is used.
 				-->
 				<executions>
 					<execution>
@@ -138,6 +139,28 @@
 						</goals>
 						<configuration>
 							<arguments>test</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- The browser smoke test's headless Chromium; a no-op once it is cached. Skipped by -DskipTests. -->
+						<id>playwright-install</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>exec --no -- playwright install chromium</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- The real-browser smoke test (vitest.browser.config.ts), after the jsdom suite. Skipped by -DskipTests. -->
+						<id>npm-test-browser</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>run test:browser</arguments>
 						</configuration>
 					</execution>
 				</executions>

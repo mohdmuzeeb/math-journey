@@ -83,13 +83,33 @@ describe('Activity', () => {
     expect(strip()!.textContent).toBe('You did it!')
   })
 
-  it('keeps Check disabled when a grab is cancelled before any answer', async () => {
+  it('starts with the point unplaced beside the line, not on min', () => {
     render(<Activity item={item} />)
-    layoutNumberLine().focus()
+    const point = layoutNumberLine()
+    expect(point.getAttribute('aria-label')).toBe('Number line point, not placed yet')
+    expect(point.style.left).toBe('')
+    expect(checkButton().disabled).toBe(true)
+  })
+
+  it('keeps Check disabled and parks the point again when a grab is cancelled before any answer', async () => {
+    render(<Activity item={item} />)
+    const point = layoutNumberLine()
+    point.focus()
     await pressKey('Space')
     await pressKey('ArrowRight')
     await pressKey('Escape')
     expect(checkButton().disabled).toBe(true)
+    expect(point.getAttribute('aria-label')).toBe('Number line point, not placed yet')
+    expect(point.className).toContain('number-line__point--unplaced')
+  })
+
+  it('judges an answer at min right after a drop on the first tick', async () => {
+    const atMin: ConceptItem = { ...item, payload: { ...item.payload, prompt: 'Drag the point to 0', target: '0' }, answer: 0 }
+    render(<Activity item={atMin} />)
+    await pointerDrag(layoutNumberLine(), tickClientX(0, LAST) + 5)
+    expect(checkButton().disabled).toBe(false)
+    fireEvent.click(checkButton())
+    expect(strip()!.textContent).toBe('You did it!')
   })
 
   it('re-enables Check when a grab after an answer is cancelled', async () => {

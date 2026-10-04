@@ -13,7 +13,9 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "pretest": "npm run gen:api && npm run gen:content",
-    "test": "vitest run"
+    "test": "vitest run",
+    "pretest:browser": "npm run gen:api && npm run gen:content",
+    "test:browser": "vitest run --config vitest.browser.config.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -27,10 +29,13 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
+    "@vitest/browser": "5.0.3",
+    "@vitest/browser-playwright": "5.0.3",
     "jsdom": "^30.1.1",
     "json-schema-to-typescript": "16.0.0",
     "openapi-typescript": "7.13.0",
     "oxlint": "^1.81.0",
+    "playwright": "1.63.0",
     "typescript": "6.0.3",
     "vite": "^8.3.0",
     "vitest": "^5.0.3"

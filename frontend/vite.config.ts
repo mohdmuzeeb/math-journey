@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,5 +12,7 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    // the real-browser smoke tests run separately: vitest.browser.config.ts (npm run test:browser)
+    exclude: [...configDefaults.exclude, 'src/browser/**'],
   },
 })

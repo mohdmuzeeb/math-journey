@@ -88,3 +88,15 @@ covers = []
 after = [1, 2, 3, 4, 5, 6, 7]
 hitl = false
 risk = "low"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Number-line hardening"
+description = "Closes the number-line gaps the epic retrospective found. Startup refuses a number line the browser would draw or judge wrongly: max not above min, a range that is not a whole number of steps, more than 40 steps, values that are not finite in double arithmetic, or a stored answer the browser's snap would put on a different tick. A mouse or touch drop lands on the tick under the point's centre, not under the pointer. A target equal to the line's start can be answered. The fixture validity test reads numbers the way the content loader does, the concept API test asserts the payload fields, and server-error status exceptions are logged. Adds one real-browser smoke test to ./mvnw verify: a keyboard-only answer, a pointer drop near a tick, a narrow (~360px) layout, and reduced motion."
+verify = "A demo copy with max 1 and step 0.4, or with 41 steps, refuses to start and names the item. In a real browser, a drop with the pointer off the point's centre answers the tick under the point. A target at min can be answered and is judged correct. ./mvnw verify passes, including the browser smoke test."
+covers = ["E2", "E3", "E4", "E5"]
+after = [8]
+hitl = false
+risk = "medium"
+references = ["retrospective — _bmad-output/initiative-math-learning-app/epic-foundation/epic-foundation-retrospective.md, Findings A1–A7 and C1; Action items 1–3"]

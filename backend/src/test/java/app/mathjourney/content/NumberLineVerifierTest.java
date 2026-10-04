@@ -1,6 +1,9 @@
 package app.mathjourney.content;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+
+import java.time.Duration;
 
 import java.util.List;
 
@@ -146,6 +149,111 @@ class NumberLineVerifierTest {
 		JsonNode payload = payload("0", "2", "0.25", "1/2");
 		assertThat(this.verifier.verify(payload, json("0.75"), json("[0.75]"))).extracting(AnswerProblem::field)
 			.containsExactly(Field.ANSWER, Field.ACCEPTED_ANSWERS);
+	}
+
+	// --- geometry (story 1.9) ---
+
+	/** The single problem, which must be about the payload. */
+	private String payloadProblem(JsonNode payload, String answer) {
+		List<AnswerProblem> problems = this.verifier.verify(payload, json(answer), null);
+		assertThat(problems).singleElement()
+			.satisfies((problem) -> assertThat(problem.field()).isEqualTo(Field.PAYLOAD));
+		return problems.get(0).message();
+	}
+
+	@Test
+	void rangeThatIsNotWholeSteps() {
+		// 0..1 in steps of 0.4 would draw a droppable 1.2 past the end
+		assertThat(payloadProblem(payload("0", "1", "0.4", "2/5"), "0.4")).contains("whole number of steps", "0.4",
+				"2.5");
+	}
+
+	@Test
+	void tooManySteps() {
+		assertThat(payloadProblem(payload("0", "41", "1", "3"), "3")).contains("at most 40 steps");
+		assertThat(payloadProblem(payload("0", "1", "0.001", "1/2"), "0.5")).contains("at most 40 steps");
+	}
+
+	@Test
+	void fortyStepsPass() {
+		assertThat(verify(payload("-10", "10", "0.5", "-10"), "-10")).isEmpty();
+		assertThat(verify(payload("-10", "10", "0.5", "10"), "10")).isEmpty();
+		assertThat(verify(payload("-10", "10", "0.5", "3/2"), "1.5")).isEmpty();
+	}
+
+	@Test
+	void emptyRange() {
+		assertThat(payloadProblem(payload("1", "1", "0.25", "1"), "1")).contains("max 1 must be greater than min 1");
+	}
+
+	@Test
+	void reversedRange() {
+		assertThat(payloadProblem(payload("2", "0", "0.25", "1"), "1")).contains("max 0 must be greater than min 2");
+	}
+
+	@Test
+	void stepThatIsZeroAsADouble() {
+		assertThat(payloadProblem(payload("0", "1", "1e-400", "0"), "0")).contains("step", "0 as a double");
+	}
+
+	@Test
+	void valuesThatAreNotFiniteAsDoubles() {
+		assertThat(payloadProblem(payload("0", "1e400", "1", "0"), "0")).contains("max", "not a finite double");
+		assertThat(payloadProblem(payload("-1e400", "0", "1", "0"), "0")).contains("min", "not a finite double");
+		assertThat(payloadProblem(payload("0", "1", "1e400", "0"), "0")).contains("step", "not a finite double");
+	}
+
+	@Test
+	void answerThatIsNotFiniteAsADouble() {
+		assertThat(verify(payload("0", "1", "0.25", "1/4"), "1e400")).singleElement()
+			.asString()
+			.contains("stored answer", "not a finite double");
+	}
+
+	@Test
+	void geometryStopsTheOtherAnswerChecks() {
+		// the target is also off the line, but only the first geometry problem is reported
+		assertThat(payloadProblem(payload("0", "1", "0.4", "5"), "7")).contains("whole number of steps");
+	}
+
+	@Test
+	void browserSnapThatDisagreesWithTheExactTick() {
+		// min 2^53: in doubles 2^53 + 1 rounds to 2^53, so the browser snaps the answer to tick 0,
+		// while its exact tick is 1
+		String min = "9007199254740992";
+		String answer = "9007199254740993";
+		assertThat(this.verifier.verify(payload(min, "9007199254741000", "1", answer), json(answer), null))
+			.singleElement()
+			.satisfies((problem) -> {
+				assertThat(problem.field()).isEqualTo(Field.ANSWER);
+				assertThat(problem.message()).contains("tick 0", "exact tick is 1");
+			});
+	}
+
+	@Test
+	void browserStepCountThatDisagreesWithTheExactCount() {
+		// exactly 9 steps, but max - min is 8 (or 10) in doubles above 2^53
+		assertThat(payloadProblem(payload("9007199254740992", "9007199254741001", "1", "9007199254740992"),
+				"9007199254740992"))
+			.contains("has 9 steps", "in double arithmetic");
+		// exactly 20 steps, but max - min overflows to Infinity in doubles
+		assertThat(payloadProblem(payload("-1e308", "1e308", "1e307", "0"), "0")).contains("has 20 steps",
+				"Infinity");
+	}
+
+	@Test
+	void valuesWithAHugeExponentAreRefusedQuickly() {
+		// 1e-20000000 reads as the double 0, so it is finite; exact arithmetic on it would take minutes
+		assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
+			assertThat(payloadProblem(payload("1e-20000000", "1", "0.25", "1/2"), "0.5")).contains("min",
+					"exponent");
+			assertThat(this.verifier.verify(payload("0", "1", "0.25", "1/2"), json("1e-20000000"), null))
+				.singleElement()
+				.satisfies((problem) -> {
+					assertThat(problem.field()).isEqualTo(Field.ANSWER);
+					assertThat(problem.message()).contains("stored answer", "exponent");
+				});
+		});
 	}
 
 }

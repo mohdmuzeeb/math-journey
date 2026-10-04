@@ -25,7 +25,8 @@ public interface AnswerVerifier {
 	String kind();
 
 	/**
-	 * Computes the answer from {@code payload} and checks the stored answers against it.
+	 * Computes the answer from {@code payload} and checks the stored answers against it. A kind may
+	 * also refuse a payload the browser cannot render faithfully ({@link AnswerProblem.Field#PAYLOAD}).
 	 * <p>
 	 * The loader calls it once per item and once per walkthrough {@code similar}. Each problem
 	 * names the field it belongs to, which decides the path it is recorded at.

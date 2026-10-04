@@ -140,6 +140,17 @@ class ErrorAndSpaRoutingTest {
 			.andExpect(jsonPath("$.detail").doesNotExist());
 	}
 
+	@Test
+	void serverErrorResponseStatusExceptionIsLogged(CapturedOutput output) throws Exception {
+		this.mockMvc.perform(get("/api/test-unavailable"))
+			.andExpect(status().isServiceUnavailable())
+			.andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+			.andExpect(jsonPath("$.status").value(503))
+			.andExpect(jsonPath("$.detail").value("down"));
+		assertThat(output).contains("[web] 503 handling GET /api/test-unavailable");
+		assertThat(output).contains(UnavailableException.class.getName());
+	}
+
 	/** Test-only: nested in a test class, so other tests' component scans and the OpenAPI export skip it. */
 	@RestController
 	static class FailingController {
@@ -161,6 +172,11 @@ class ErrorAndSpaRoutingTest {
 			throw new GoneException();
 		}
 
+		@GetMapping("/api/test-unavailable")
+		String unavailable() {
+			throw new UnavailableException();
+		}
+
 	}
 
 	@ResponseStatus(code = HttpStatus.CONFLICT, reason = "taken")
@@ -170,6 +186,11 @@ class ErrorAndSpaRoutingTest {
 
 	@ResponseStatus(HttpStatus.GONE)
 	static class GoneException extends RuntimeException {
+
+	}
+
+	@ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE, reason = "down")
+	static class UnavailableException extends RuntimeException {
 
 	}
 

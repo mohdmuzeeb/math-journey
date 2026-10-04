@@ -106,7 +106,8 @@ body {
 
 /* Number line: a track of tick bands (drop zones) with one draggable point (a drag tile) */
 .number-line {
-  padding: 0 var(--space-6);
+  /* the left side also holds the unplaced point's parking spot */
+  padding: 0 var(--space-6) 0 var(--space-number-line-park);
   user-select: none;
 }
 
@@ -182,6 +183,11 @@ body {
   border-radius: var(--radius-sm);
   cursor: grab;
   touch-action: none;
+}
+
+/* Not placed yet: parked just left of the line's first tick, outside every drop zone */
+.number-line__point--unplaced {
+  left: var(--offset-number-line-park);
 }
 
 /* The exact spot on the line */
