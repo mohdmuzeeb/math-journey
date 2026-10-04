@@ -1,0 +1,128 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "OpenAPI definition",
+    "version" : "v0"
+  },
+  "servers" : [ {
+    "url" : "http://localhost",
+    "description" : "Generated server url"
+  } ],
+  "paths" : {
+    "/api/learner" : {
+      "get" : {
+        "tags" : [ "learner-controller" ],
+        "operationId" : "learner",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LearnerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/concepts/{id}" : {
+      "get" : {
+        "tags" : [ "concept-controller" ],
+        "operationId" : "concept",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConceptResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "LearnerResponse" : {
+        "type" : "object",
+        "description" : "The learner profile",
+        "properties" : {
+          "onboardingStage" : {
+            "type" : "string",
+            "enum" : [ "welcome", "prereq-check", "journey" ]
+          },
+          "settings" : {
+            "$ref" : "#/components/schemas/LearnerSettingsResponse"
+          }
+        },
+        "required" : [ "onboardingStage", "settings" ]
+      },
+      "LearnerSettingsResponse" : {
+        "type" : "object",
+        "description" : "The learner's settings",
+        "properties" : {
+          "sound" : {
+            "type" : "boolean"
+          },
+          "companionName" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "companionName", "sound" ]
+      },
+      "ConceptItemResponse" : {
+        "type" : "object",
+        "description" : "One activity item of a concept",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string"
+          },
+          "payload" : {
+            "type" : "object",
+            "additionalProperties" : { },
+            "description" : "Opaque kind-specific payload; typed only by the content schemas (AD-7)"
+          },
+          "answer" : {
+            "description" : "Opaque canonical answer, any JSON value (AD-3)"
+          }
+        },
+        "required" : [ "answer", "id", "kind", "payload" ]
+      },
+      "ConceptResponse" : {
+        "type" : "object",
+        "description" : "A concept and its items",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ConceptItemResponse"
+            }
+          }
+        },
+        "required" : [ "id", "items", "title" ]
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "gen:api": "openapi-typescript openapi.json -o src/api/schema.d.ts",
+    "predev": "npm run gen:api",
+    "dev": "vite",
+    "prebuild": "npm run gen:api",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "pretest": "npm run gen:api",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "jsdom": "^30.1.1",
+    "openapi-typescript": "7.13.0",
+    "oxlint": "^1.81.0",
+    "typescript": "6.0.3",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.3"
+  },
+  "overrides": {
+    "typescript": "$typescript"
+  }
+}

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.1.1</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>app.mathjourney</groupId>
+	<artifactId>backend</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>math-journey</name>
+
+	<properties>
+		<java.version>25</java.version>
+		<frontend-maven-plugin.version>2.0.2</frontend-maven-plugin.version>
+		<node.version>v22.23.3</node.version>
+		<springdoc.version>3.1.1</springdoc.version>
+		<frontend.dir>${project.basedir}/../frontend</frontend.dir>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		<!-- AD-7: publishes the OpenAPI document the frontend API types are generated from -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc.version}</version>
+		</dependency>
+
+		<!-- AD-11 / AD-17: H2 file database in ${app.data-dir}, schema owned by Flyway -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>math-journey</finalName>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<!-- AD-17: lesson content is packaged into the jar classpath under content/ -->
+			<resource>
+				<directory>${project.basedir}/../content</directory>
+				<targetPath>content</targetPath>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<!-- Tests never touch ~/.mathjourney; `mvn clean` resets the test database -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<app.data-dir>${project.build.directory}/test-data</app.data-dir>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>${frontend-maven-plugin.version}</version>
+				<configuration>
+					<workingDirectory>${frontend.dir}</workingDirectory>
+					<installDirectory>${frontend.dir}</installDirectory>
+				</configuration>
+				<!--
+					Build order (AD-7): compile -> test (OpenApiExportTest writes ../frontend/openapi.json)
+					-> prepare-package (generate API types, tsc, vite build into target/classes/static, AD-1)
+					-> package (jar) -> integration-test (Vitest). With -DskipTests the committed openapi.json is used.
+				-->
+				<executions>
+					<execution>
+						<id>install-node-and-npm</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>install-node-and-npm</goal>
+						</goals>
+						<configuration>
+							<nodeVersion>${node.version}</nodeVersion>
+						</configuration>
+					</execution>
+					<execution>
+						<id>npm-ci</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>ci</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>npm-build</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>run build -- --outDir ${project.build.outputDirectory}/static --emptyOutDir</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- Runs in integration-test, so -DskipTests skips it too -->
+						<id>npm-test</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>test</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
