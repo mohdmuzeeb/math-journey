@@ -27,15 +27,15 @@ public interface AnswerVerifier {
 	/**
 	 * Computes the answer from {@code payload} and checks the stored answers against it.
 	 * <p>
-	 * Must be deterministic: the loader may call it once with {@code acceptedAnswers} null (to find
-	 * the problems with {@code answer}) and once with them (the extra problems are attributed to
-	 * {@code acceptedAnswers}).
+	 * The loader calls it once per item and once per walkthrough {@code similar}. Each problem
+	 * names the field it belongs to, which decides the path it is recorded at.
 	 * @param payload the problem, valid against the kind's {@code $defs.payload}
 	 * @param answer the stored canonical answer, valid against the kind's {@code $defs.answer}
 	 * @param acceptedAnswers the stored alternatives (an array), or null when there are none, as for
 	 * a walkthrough's {@code similar}
-	 * @return one human-readable message per problem; empty when the stored answers are correct
+	 * @return one problem per disagreement, each tagged with its field; empty when the stored
+	 * answers are correct
 	 */
-	List<String> verify(JsonNode payload, JsonNode answer, JsonNode acceptedAnswers);
+	List<AnswerProblem> verify(JsonNode payload, JsonNode answer, JsonNode acceptedAnswers);
 
 }

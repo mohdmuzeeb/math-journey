@@ -38,12 +38,14 @@ class NumberLineVerifier implements AnswerVerifier {
 	}
 
 	@Override
-	public List<String> verify(JsonNode payload, JsonNode answer, JsonNode acceptedAnswers) {
-		List<String> problems = new ArrayList<>();
-		check(payload, answer, problems);
+	public List<AnswerProblem> verify(JsonNode payload, JsonNode answer, JsonNode acceptedAnswers) {
+		List<AnswerProblem> problems = new ArrayList<>();
+		List<String> answerProblems = new ArrayList<>();
+		check(payload, answer, answerProblems);
+		answerProblems.forEach((message) -> problems.add(AnswerProblem.answer(message)));
 		if (acceptedAnswers != null && !acceptedAnswers.isEmpty()) {
-			problems.add("a number-line item has exactly one correct tick, so acceptedAnswers must be empty (found "
-					+ acceptedAnswers + ")");
+			problems.add(AnswerProblem.acceptedAnswers("a number-line item has exactly one correct tick, so acceptedAnswers must be empty (found "
+					+ acceptedAnswers + ")"));
 		}
 		return problems;
 	}

@@ -33,7 +33,10 @@
         "role": { "enum": ["discover", "practice", "review", "challenge"] },
         "kind": { "enum": ["number-line"] },
         "payload": { "type": "object" },
-        "answer": { "description": "Canonical answer; its shape is defined by the kind's schema ($defs.answer)" },
+        "answer": {
+          "description": "Canonical answer; its shape is defined by the kind's schema ($defs.answer)",
+          "tsType": "unknown"
+        },
         "acceptedAnswers": {
           "type": "array",
           "description": "Accepted alternatives, each shaped by the kind's schema ($defs.answer)"
@@ -57,7 +60,7 @@
               "additionalProperties": false,
               "properties": {
                 "payload": { "type": "object" },
-                "answer": {}
+                "answer": { "tsType": "unknown" }
               }
             }
           }

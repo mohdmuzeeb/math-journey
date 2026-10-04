@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import app.mathjourney.content.AnswerProblem.Field;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -29,8 +30,11 @@ class NumberLineVerifierTest {
 				+ target + "\"}");
 	}
 
+	/** The messages of the problems with {@code answer}; fails if any problem is not about {@code answer}. */
 	private List<String> verify(JsonNode payload, String answer) {
-		return this.verifier.verify(payload, json(answer), null);
+		List<AnswerProblem> problems = this.verifier.verify(payload, json(answer), null);
+		assertThat(problems).allSatisfy((problem) -> assertThat(problem.field()).isEqualTo(Field.ANSWER));
+		return problems.stream().map(AnswerProblem::message).toList();
 	}
 
 	@Test
@@ -130,15 +134,18 @@ class NumberLineVerifierTest {
 	void acceptedAnswersAreNotAllowed() {
 		JsonNode payload = payload("0", "2", "0.25", "1/2");
 		assertThat(this.verifier.verify(payload, json("0.5"), json("[0.5]"))).singleElement()
-			.asString()
-			.contains("exactly one correct tick", "acceptedAnswers");
+			.satisfies((problem) -> {
+				assertThat(problem.field()).isEqualTo(Field.ACCEPTED_ANSWERS);
+				assertThat(problem.message()).contains("exactly one correct tick", "acceptedAnswers");
+			});
 		assertThat(this.verifier.verify(payload, json("0.5"), json("[]"))).isEmpty();
 	}
 
 	@Test
 	void answerAndAcceptedAnswersProblemsAreBothReported() {
 		JsonNode payload = payload("0", "2", "0.25", "1/2");
-		assertThat(this.verifier.verify(payload, json("0.75"), json("[0.75]"))).hasSize(2);
+		assertThat(this.verifier.verify(payload, json("0.75"), json("[0.75]"))).extracting(AnswerProblem::field)
+			.containsExactly(Field.ANSWER, Field.ACCEPTED_ANSWERS);
 	}
 
 }

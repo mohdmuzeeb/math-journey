@@ -232,9 +232,11 @@ final class ContentLoader {
 		Map<String, String> schemas = new HashMap<>();
 		schemaFiles.forEach((name, text) -> schemas.put(SCHEMA_BASE + name, text));
 		SchemaRegistryConfig config = SchemaRegistryConfig.builder().pathType(PathType.JSON_PATH).build();
-		// Draft 2020-12, plus the kind schemas' "x-equivalence" annotation (AD-3) as a known keyword
+		// Draft 2020-12, plus two known annotation keywords: the kind schemas' "x-equivalence" (AD-3),
+		// and "tsType", which only steers the generated TypeScript types (gen-content-types.mjs)
 		Dialect dialect = Dialect.builder(Dialects.getDraft202012())
 			.keyword(new AnnotationKeyword("x-equivalence"))
+			.keyword(new AnnotationKeyword("tsType"))
 			.build();
 		return SchemaRegistry.withDefaultDialect(dialect,
 				(builder) -> builder.schemas(schemas).schemaRegistryConfig(config));
@@ -340,20 +342,18 @@ final class ContentLoader {
 	}
 
 	/**
-	 * Runs one verification. Problems found with {@code answer} alone are recorded at
-	 * {@code <basePath>.answer}; the extra problems that {@code acceptedAnswers} adds are recorded at
-	 * {@code <basePath>.acceptedAnswers}. Each message is prefixed with the item id.
+	 * Runs one verification. Each problem is recorded at {@code <basePath>.answer} or
+	 * {@code <basePath>.acceptedAnswers}, by its field, with the message prefixed by the item id.
 	 */
 	private static void verifyAnswers(AnswerVerifier verifier, JsonNode payload, JsonNode answer, JsonNode accepted,
 			String itemId, String file, String basePath, List<ContentError> errors) {
 		String prefix = "item \"" + itemId + "\": ";
-		List<String> answerProblems = verifier.verify(payload, answer, null);
-		answerProblems.forEach((message) -> errors.add(new ContentError(file, basePath + ".answer", prefix + message)));
-		if (accepted != null) {
-			List<String> acceptedProblems = new ArrayList<>(verifier.verify(payload, answer, accepted));
-			answerProblems.forEach(acceptedProblems::remove);
-			acceptedProblems.forEach(
-					(message) -> errors.add(new ContentError(file, basePath + ".acceptedAnswers", prefix + message)));
+		for (AnswerProblem problem : verifier.verify(payload, answer, accepted)) {
+			String path = basePath + switch (problem.field()) {
+				case ANSWER -> ".answer";
+				case ACCEPTED_ANSWERS -> ".acceptedAnswers";
+			};
+			errors.add(new ContentError(file, path, prefix + problem.message()));
 		}
 	}
 

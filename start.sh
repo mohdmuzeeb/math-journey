@@ -33,13 +33,19 @@ for arg in "$@"; do
 done
 
 # --- Java check (accept >= 25: a newer JDK runs the jar too) ---
-if ! command -v java >/dev/null 2>&1; then
+# Like mvnw: $JAVA_HOME's java when JAVA_HOME is set, else the java on PATH.
+if [[ -n "${JAVA_HOME:-}" ]]; then
+  JAVA="$JAVA_HOME/bin/java"
+else
+  JAVA="java"
+fi
+if ! command -v "$JAVA" >/dev/null 2>&1; then
   echo "Java was not found." >&2
   print_java_help >&2
   exit 1
 fi
 
-java_version="$(java -version 2>&1 | awk -F'"' '/version/ {print $2; exit}' || true)"
+java_version="$("$JAVA" -version 2>&1 | awk -F'"' '/version/ {print $2; exit}' || true)"
 java_major="${java_version%%.*}"
 if [[ "$java_major" == "1" ]]; then
   # Legacy scheme, e.g. 1.8.0_402
@@ -71,7 +77,7 @@ if port_open; then
 fi
 
 # --- Start the app ---
-java -jar "$JAR" "${profile_args[@]+"${profile_args[@]}"}" &
+"$JAVA" -jar "$JAR" "${profile_args[@]+"${profile_args[@]}"}" &
 app_pid=$!
 trap 'kill "$app_pid" 2>/dev/null || true' INT TERM
 

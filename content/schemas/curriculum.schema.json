@@ -10,6 +10,7 @@
     "lands": {
       "type": "array",
       "minItems": 5,
+      "maxItems": 5,
       "prefixItems": [
         { "$ref": "#/$defs/land", "properties": { "id": { "const": "numbers" } } },
         { "$ref": "#/$defs/land", "properties": { "id": { "const": "equations" } } },
@@ -17,7 +18,7 @@
         { "$ref": "#/$defs/land", "properties": { "id": { "const": "shapes" } } },
         { "$ref": "#/$defs/land", "properties": { "id": { "const": "data" } } }
       ],
-      "items": false
+      "items": { "$ref": "#/$defs/land" }
     },
     "prerequisites": { "$ref": "#/$defs/conceptIds" }
   },
