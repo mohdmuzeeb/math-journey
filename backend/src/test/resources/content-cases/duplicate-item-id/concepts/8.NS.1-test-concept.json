@@ -1,0 +1,280 @@
+{
+  "id": "8.NS.1-test-concept",
+  "land": "numbers",
+  "ccss": "8.NS.1",
+  "title": "Test concept",
+  "reviewed": false,
+  "retired": false,
+  "items": [
+    {
+      "id": "8.NS.1-test-concept#item-0",
+      "role": "discover",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 1/2",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "1/2"
+      },
+      "answer": 0.5,
+      "nudge": "Look at the ticks.",
+      "hint": "Each tick is 1/4.",
+      "walkthrough": {
+        "steps": [
+          "Count two ticks."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/4",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "1/4"
+          },
+          "answer": 0.25
+        }
+      }
+    },
+    {
+      "id": "8.NS.1-test-concept#item-1",
+      "role": "practice",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 1/2",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "1/2"
+      },
+      "answer": 0.5,
+      "nudge": "Look at the ticks.",
+      "hint": "Each tick is 1/4.",
+      "walkthrough": {
+        "steps": [
+          "Count two ticks."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/4",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "1/4"
+          },
+          "answer": 0.25
+        }
+      }
+    },
+    {
+      "id": "8.NS.1-test-concept#item-2",
+      "role": "practice",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 1/2",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "1/2"
+      },
+      "answer": 0.5,
+      "nudge": "Look at the ticks.",
+      "hint": "Each tick is 1/4.",
+      "walkthrough": {
+        "steps": [
+          "Count two ticks."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/4",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "1/4"
+          },
+          "answer": 0.25
+        }
+      }
+    },
+    {
+      "id": "8.NS.1-test-concept#item-3",
+      "role": "practice",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 1/2",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "1/2"
+      },
+      "answer": 0.5,
+      "nudge": "Look at the ticks.",
+      "hint": "Each tick is 1/4.",
+      "walkthrough": {
+        "steps": [
+          "Count two ticks."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/4",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "1/4"
+          },
+          "answer": 0.25
+        }
+      }
+    },
+    {
+      "id": "8.NS.1-test-concept#item-4",
+      "role": "practice",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 1/2",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "1/2"
+      },
+      "answer": 0.5,
+      "nudge": "Look at the ticks.",
+      "hint": "Each tick is 1/4.",
+      "walkthrough": {
+        "steps": [
+          "Count two ticks."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/4",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "1/4"
+          },
+          "answer": 0.25
+        }
+      }
+    },
+    {
+      "id": "8.NS.1-test-concept#item-5",
+      "role": "review",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 1/2",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "1/2"
+      },
+      "answer": 0.5,
+      "nudge": "Look at the ticks.",
+      "hint": "Each tick is 1/4.",
+      "walkthrough": {
+        "steps": [
+          "Count two ticks."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/4",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "1/4"
+          },
+          "answer": 0.25
+        }
+      }
+    },
+    {
+      "id": "8.NS.1-test-concept#item-5",
+      "role": "review",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 1/2",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "1/2"
+      },
+      "answer": 0.5,
+      "nudge": "Look at the ticks.",
+      "hint": "Each tick is 1/4.",
+      "walkthrough": {
+        "steps": [
+          "Count two ticks."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/4",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "1/4"
+          },
+          "answer": 0.25
+        }
+      }
+    },
+    {
+      "id": "8.NS.1-test-concept#item-7",
+      "role": "review",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 1/2",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "1/2"
+      },
+      "answer": 0.5,
+      "nudge": "Look at the ticks.",
+      "hint": "Each tick is 1/4.",
+      "walkthrough": {
+        "steps": [
+          "Count two ticks."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/4",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "1/4"
+          },
+          "answer": 0.25
+        }
+      }
+    },
+    {
+      "id": "8.NS.1-test-concept#item-8",
+      "role": "challenge",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 1/2",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "1/2"
+      },
+      "answer": 0.5,
+      "nudge": "Look at the ticks.",
+      "hint": "Each tick is 1/4.",
+      "walkthrough": {
+        "steps": [
+          "Count two ticks."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/4",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "1/4"
+          },
+          "answer": 0.25
+        }
+      }
+    }
+  ]
+}

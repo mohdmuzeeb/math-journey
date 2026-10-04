@@ -1,0 +1,32 @@
+{
+  "lands": [
+    {
+      "id": "numbers",
+      "title": "Numbers",
+      "concepts": [
+        "demo-number-line"
+      ]
+    },
+    {
+      "id": "equations",
+      "title": "Equations",
+      "concepts": []
+    },
+    {
+      "id": "functions",
+      "title": "Functions",
+      "concepts": []
+    },
+    {
+      "id": "shapes",
+      "title": "Shapes",
+      "concepts": []
+    },
+    {
+      "id": "data",
+      "title": "Data",
+      "concepts": []
+    }
+  ],
+  "prerequisites": []
+}

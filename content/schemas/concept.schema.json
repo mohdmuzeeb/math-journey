@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mathjourney.app/content/schemas/concept.schema.json",
+  "title": "Concept",
+  "description": "One concept file under content/concepts/<id>.json (AD-10, AD-12). Each item's payload and answers are validated by its kind's schema (<kind>.schema.json, $defs payload and answer).",
+  "type": "object",
+  "required": ["id", "land", "ccss", "title", "reviewed", "retired", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "$ref": "#/$defs/conceptId" },
+    "land": { "enum": ["numbers", "equations", "functions", "shapes", "data"] },
+    "ccss": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "reviewed": { "type": "boolean" },
+    "retired": { "type": "boolean" },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "conceptId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9.]+(-[a-z0-9]+)+$"
+    },
+    "item": {
+      "type": "object",
+      "required": ["id", "role", "kind", "payload", "answer", "nudge", "hint", "walkthrough"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "role": { "enum": ["discover", "practice", "review", "challenge"] },
+        "kind": { "enum": ["number-line"] },
+        "payload": { "type": "object" },
+        "answer": { "description": "Canonical answer; its shape is defined by the kind's schema ($defs.answer)" },
+        "acceptedAnswers": {
+          "type": "array",
+          "description": "Accepted alternatives, each shaped by the kind's schema ($defs.answer)"
+        },
+        "retired": { "type": "boolean" },
+        "nudge": { "type": "string", "minLength": 1 },
+        "hint": { "type": "string", "minLength": 1 },
+        "walkthrough": {
+          "type": "object",
+          "required": ["steps", "similar"],
+          "additionalProperties": false,
+          "properties": {
+            "steps": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "similar": {
+              "type": "object",
+              "required": ["payload", "answer"],
+              "additionalProperties": false,
+              "properties": {
+                "payload": { "type": "object" },
+                "answer": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

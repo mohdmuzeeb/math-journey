@@ -6,6 +6,8 @@ export interface NumberLinePayload {
   min: number
   max: number
   step: number
+  /** The problem's exact value, e.g. "3/4" */
+  target: string
 }
 
 /** Index of the last tick on the line. */

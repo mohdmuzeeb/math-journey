@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { isCorrect, snap, tickValue } from './numberLine.ts'
 
-const payload = { prompt: 'Drag the point to 3/4', min: 0, max: 2, step: 0.25 }
+const payload = { prompt: 'Drag the point to 3/4', min: 0, max: 2, step: 0.25, target: '3/4' }
 const answer = 0.75
 
 describe('snap', () => {
