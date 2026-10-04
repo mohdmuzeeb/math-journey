@@ -1,3 +1,4 @@
-# Keeps tests run outside Maven (e.g. from the IDE) away from ~/.mathjourney; merged over the main application.yml.
+# The only place the test data dir is set: tests (Maven or IDE) never touch ~/.mathjourney, and
+# `mvn clean` resets the test database. Merged over the main application.yml.
 app:
   data-dir: ${user.dir}/target/test-data

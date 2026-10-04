@@ -16,11 +16,13 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -119,6 +121,25 @@ class ErrorAndSpaRoutingTest {
 		assertThat(output).contains(FailingController.SECRET);
 	}
 
+	@Test
+	void responseStatusExceptionKeepsItsStatusAndReason(CapturedOutput output) throws Exception {
+		this.mockMvc.perform(get("/api/test-conflict"))
+			.andExpect(status().isConflict())
+			.andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+			.andExpect(jsonPath("$.status").value(409))
+			.andExpect(jsonPath("$.detail").value("taken"));
+		assertThat(output).doesNotContain("[web] Unexpected error");
+	}
+
+	@Test
+	void responseStatusExceptionWithoutReasonHasNoDetail() throws Exception {
+		this.mockMvc.perform(get("/api/test-gone"))
+			.andExpect(status().isGone())
+			.andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+			.andExpect(jsonPath("$.status").value(410))
+			.andExpect(jsonPath("$.detail").doesNotExist());
+	}
+
 	/** Test-only: nested in a test class, so other tests' component scans and the OpenAPI export skip it. */
 	@RestController
 	static class FailingController {
@@ -129,6 +150,26 @@ class ErrorAndSpaRoutingTest {
 		String fail() {
 			throw new RuntimeException(SECRET);
 		}
+
+		@GetMapping("/api/test-conflict")
+		String conflict() {
+			throw new TakenException();
+		}
+
+		@GetMapping("/api/test-gone")
+		String gone() {
+			throw new GoneException();
+		}
+
+	}
+
+	@ResponseStatus(code = HttpStatus.CONFLICT, reason = "taken")
+	static class TakenException extends RuntimeException {
+
+	}
+
+	@ResponseStatus(HttpStatus.GONE)
+	static class GoneException extends RuntimeException {
 
 	}
 

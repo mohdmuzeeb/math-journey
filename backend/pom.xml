@@ -73,22 +73,16 @@
 			<resource>
 				<directory>${project.basedir}/../content</directory>
 				<targetPath>content</targetPath>
+				<!-- test fixtures stay out of the jar; the Java fixture tests read them from ../content/fixtures/ -->
+				<excludes>
+					<exclude>fixtures/**</exclude>
+				</excludes>
 			</resource>
 		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<!-- Tests never touch ~/.mathjourney; `mvn clean` resets the test database -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<systemPropertyVariables>
-						<app.data-dir>${project.build.directory}/test-data</app.data-dir>
-					</systemPropertyVariables>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
@@ -115,13 +109,14 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>npm-ci</id>
+						<!-- install, not ci: reuses node_modules; the committed lockfile pins the same tree -->
+						<id>npm-install</id>
 						<phase>prepare-package</phase>
 						<goals>
 							<goal>npm</goal>
 						</goals>
 						<configuration>
-							<arguments>ci</arguments>
+							<arguments>install --no-audit --no-fund</arguments>
 						</configuration>
 					</execution>
 					<execution>

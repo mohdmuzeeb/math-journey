@@ -1,0 +1,84 @@
+/* Orchid Pop design tokens, transcribed from DESIGN.md frontmatter. Light mode only.
+   Every other stylesheet takes its values from these variables. */
+:root {
+  color-scheme: light;
+
+  /* colors */
+  --color-background: #ffffff;
+  --color-surface: #fdf4ff;
+  --color-surface-raised: #ffffff;
+  --color-primary: #a21caf;
+  --color-primary-strong: #86198f;
+  --color-on-primary: #ffffff;
+  --color-accent: #22d3ee;
+  --color-on-accent: #1f1235;
+  --color-ink: #1f1235;
+  --color-ink-muted: #7a6a8a;
+  --color-border: #f5d0fe;
+  --color-path-done: #a21caf;
+  --color-path-ahead: #f5d0fe;
+  --color-success: #16a34a;
+  --color-success-surface: #dcfce7;
+  --color-success-ink: #166534;
+  --color-nudge-surface: #fef3c7;
+  --color-nudge-ink: #92400e;
+
+  /* typography (one family for every role) */
+  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display-size: 28px;
+  --font-display-weight: 800;
+  --font-display-line-height: 1.2;
+  --font-title-size: 20px;
+  --font-title-weight: 800;
+  --font-title-line-height: 1.3;
+  --font-body-size: 16px;
+  --font-body-weight: 400;
+  --font-body-line-height: 1.5;
+  --font-label-size: 13px;
+  --font-label-weight: 700;
+  --font-label-line-height: 1.3;
+  --font-math-size: 22px;
+  --font-math-weight: 700;
+  --font-math-line-height: 1.2;
+
+  /* rounded */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+
+  /* spacing (4px scale) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-page-gutter: 28px;
+
+  /* elevation (components.card.shadow, components.drag-tile-active.shadow) */
+  --shadow-card: 0 12px 32px rgba(162, 28, 175, 0.18);
+  --shadow-drag: 0 8px 20px rgba(162, 28, 175, 0.3);
+
+  /* sizes (components.button-primary.minHeight, drag-tile border, Layout max content width) */
+  --size-touch-min: 44px;
+  --size-drag-min: 48px; /* components.drag-tile.minSize */
+  --size-drag-centre: calc(var(--size-drag-min) / 2);
+  --offset-drag-centre: calc(-1 * var(--size-drag-centre)); /* margin that centres a drag tile without a transform */
+  --border-width: 2px;
+  --content-max-width: 880px;
+
+  /* number line (a drag tile centred on the axis, with tick labels below it) */
+  --size-number-line-track: 120px;
+  --offset-number-line-label: calc(var(--size-drag-centre) + var(--space-3));
+
+  /* layers inside the number line: zone bands under the axis and ticks, the point on top */
+  --layer-number-line-zone: 0;
+  --layer-number-line-axis: 1;
+  --layer-number-line-point: 2;
+
+  /* motion (not in DESIGN.md, which names the snap and glide-back but no timing; used only
+     under prefers-reduced-motion: no-preference) */
+  --motion-glide: 180ms ease-out;
+}

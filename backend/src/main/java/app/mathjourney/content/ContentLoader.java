@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -41,9 +44,14 @@ import tools.jackson.databind.json.JsonMapper;
  * {@code $defs.answer});</li>
  * <li>per-file checks JSON Schema cannot express: id equals the file name, item ids are
  * {@code <conceptId>#...} and unique, AD-12 role minimums;</li>
+ * <li>each item's answers, and its walkthrough's {@code similar} answer, by the kind's
+ * {@link AnswerVerifier} (AD-3), once their schema checks pass;</li>
  * <li>{@code curriculum.json} against {@code curriculum.schema.json}, then cross-checked against
  * the concept files.</li>
  * </ol>
+ * It also checks that the kind registry is closed (AD-6): the {@code kind} enum in
+ * {@code concept.schema.json}, the {@code <kind>.schema.json} files and the verifiers name the same
+ * kinds.
  * It never throws for bad content: every problem is collected into {@link Result#errors()}.
  * Schemas always come from {@code classpath:content/schemas/}, whatever the content root.
  */
@@ -61,21 +69,45 @@ final class ContentLoader {
 	/** AD-12: minimum non-retired items per role in a non-retired concept. */
 	static final Map<String, Integer> ROLE_MINIMUMS = rolesInOrder();
 
+	/** Schema files that are not activity kinds. */
+	static final Set<String> NON_KIND_SCHEMAS = Set.of("concept.schema.json", "curriculum.schema.json");
+
+	static final String KIND_SCHEMA_SUFFIX = ".schema.json";
+
 	private final String contentRoot;
+
+	private final Map<String, AnswerVerifier> verifiers;
 
 	private final ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
 	private final JsonMapper jsonMapper = JsonMapper.builder()
 		.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
+		// AD-3: decimals keep their exact JSON text value, so answer verification is exact
+		.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
 		.build();
 
 	/**
 	 * @param contentRoot a Spring resource location such as {@code classpath:content} or
 	 * {@code file:/path/to/content}
+	 * @param verifiers the answer verifiers by kind (see {@link #byKind})
 	 */
-	ContentLoader(String contentRoot) {
+	ContentLoader(String contentRoot, Map<String, AnswerVerifier> verifiers) {
 		this.contentRoot = contentRoot.endsWith("/") ? contentRoot.substring(0, contentRoot.length() - 1)
 				: contentRoot;
+		this.verifiers = Map.copyOf(verifiers);
+	}
+
+	/** Indexes verifiers by their kind; a kind with two verifiers is a programming error. */
+	static Map<String, AnswerVerifier> byKind(Collection<AnswerVerifier> verifiers) {
+		Map<String, AnswerVerifier> byKind = new HashMap<>();
+		for (AnswerVerifier verifier : verifiers) {
+			AnswerVerifier previous = byKind.putIfAbsent(verifier.kind(), verifier);
+			if (previous != null) {
+				throw new IllegalStateException("two AnswerVerifiers for kind \"" + verifier.kind() + "\": "
+						+ previous.getClass().getName() + " and " + verifier.getClass().getName());
+			}
+		}
+		return byKind;
 	}
 
 	/** The loaded concepts by id (only when there are no errors at all) and every error found. */
@@ -84,10 +116,12 @@ final class ContentLoader {
 
 	Result load() {
 		List<ContentError> errors = new ArrayList<>();
-		SchemaRegistry registry = schemaRegistry(errors);
+		Map<String, String> schemaFiles = schemaFiles(errors);
 		if (!errors.isEmpty()) {
 			return new Result(Map.of(), List.copyOf(errors));
 		}
+		checkKindRegistry(schemaFiles, errors);
+		SchemaRegistry registry = schemaRegistry(schemaFiles);
 		Schema conceptSchema = registry.getSchema(SchemaLocation.of(SCHEMA_BASE + "concept.schema.json"));
 		Schema curriculumSchema = registry.getSchema(SchemaLocation.of(SCHEMA_BASE + "curriculum.schema.json"));
 
@@ -122,29 +156,87 @@ final class ContentLoader {
 
 	// --- schemas ---
 
-	private SchemaRegistry schemaRegistry(List<ContentError> errors) {
-		Map<String, String> schemas = new HashMap<>();
+	/** Every schema file's text by file name; adds an error when one cannot be read or is missing. */
+	private Map<String, String> schemaFiles(List<ContentError> errors) {
+		Map<String, String> schemas = new TreeMap<>();
 		try {
 			for (Resource resource : this.resolver.getResources(SCHEMA_LOCATION)) {
 				try (InputStream in = resource.getInputStream()) {
-					schemas.put(SCHEMA_BASE + resource.getFilename(),
-							new String(in.readAllBytes(), StandardCharsets.UTF_8));
+					schemas.put(resource.getFilename(), new String(in.readAllBytes(), StandardCharsets.UTF_8));
 				}
 			}
 		}
 		catch (IOException ex) {
 			errors.add(new ContentError("schemas/", "$", "cannot read the content schemas: " + ex.getMessage()));
-			return null;
+			return Map.of();
 		}
-		for (String required : List.of("concept.schema.json", "curriculum.schema.json")) {
-			if (!schemas.containsKey(SCHEMA_BASE + required)) {
+		for (String required : NON_KIND_SCHEMAS.stream().sorted().toList()) {
+			if (!schemas.containsKey(required)) {
 				errors.add(new ContentError("schemas/" + required, "$", "schema not found on the classpath"));
 			}
 		}
+		return schemas;
+	}
+
+	/**
+	 * AD-6: the kinds in {@code concept.schema.json}'s {@code kind} enum, the {@code <kind>.schema.json}
+	 * files and the verifiers must be the same set. Each kind missing from any of them is an error.
+	 */
+	private void checkKindRegistry(Map<String, String> schemaFiles, List<ContentError> errors) {
+		String file = "schemas/concept.schema.json";
+		String enumPath = "$.$defs.item.properties.kind.enum";
+		JsonNode concept;
+		try {
+			concept = this.jsonMapper.readTree(schemaFiles.get("concept.schema.json"));
+		}
+		catch (JacksonException ex) {
+			errors.add(new ContentError(file, "$", "malformed JSON: " + ex.getOriginalMessage()));
+			return;
+		}
+		JsonNode kindEnum = concept.at("/$defs/item/properties/kind/enum");
+		if (!kindEnum.isArray()) {
+			errors.add(new ContentError(file, enumPath, "the item kind must be an enum of activity kinds (AD-6)"));
+			return;
+		}
+		Set<String> inEnum = new TreeSet<>();
+		kindEnum.forEach((kind) -> inEnum.add(kind.asString()));
+		Set<String> withSchema = new TreeSet<>();
+		schemaFiles.keySet()
+			.stream()
+			.filter((name) -> !NON_KIND_SCHEMAS.contains(name))
+			.forEach((name) -> withSchema.add(name.substring(0, name.length() - KIND_SCHEMA_SUFFIX.length())));
+		Set<String> withVerifier = new TreeSet<>(this.verifiers.keySet());
+
+		Set<String> all = new TreeSet<>(inEnum);
+		all.addAll(withSchema);
+		all.addAll(withVerifier);
+		for (String kind : all) {
+			List<String> missing = new ArrayList<>();
+			if (!inEnum.contains(kind)) {
+				missing.add("an entry in concept.schema.json's kind enum");
+			}
+			if (!withSchema.contains(kind)) {
+				missing.add("a schemas/" + kind + KIND_SCHEMA_SUFFIX + " file");
+			}
+			if (!withVerifier.contains(kind)) {
+				missing.add("an AnswerVerifier bean");
+			}
+			if (!missing.isEmpty()) {
+				errors.add(new ContentError(file, enumPath, "activity kind \"" + kind
+						+ "\" is not registered everywhere (AD-6); it has no " + String.join(", no ", missing)));
+			}
+		}
+	}
+
+	private static SchemaRegistry schemaRegistry(Map<String, String> schemaFiles) {
+		Map<String, String> schemas = new HashMap<>();
+		schemaFiles.forEach((name, text) -> schemas.put(SCHEMA_BASE + name, text));
 		SchemaRegistryConfig config = SchemaRegistryConfig.builder().pathType(PathType.JSON_PATH).build();
-		// Draft 2020-12, plus the kind schemas' "x-equivalence" annotation (AD-3) as a known keyword
+		// Draft 2020-12, plus two known annotation keywords: the kind schemas' "x-equivalence" (AD-3),
+		// and "tsType", which only steers the generated TypeScript types (gen-content-types.mjs)
 		Dialect dialect = Dialect.builder(Dialects.getDraft202012())
 			.keyword(new AnnotationKeyword("x-equivalence"))
+			.keyword(new AnnotationKeyword("tsType"))
 			.build();
 		return SchemaRegistry.withDefaultDialect(dialect,
 				(builder) -> builder.schemas(schemas).schemaRegistryConfig(config));
@@ -198,8 +290,11 @@ final class ContentLoader {
 		return null;
 	}
 
-	/** Validates each item's payload and answers, and its similar's, against the kind's {@code $defs}. */
-	private static void checkKinds(SchemaRegistry registry, JsonNode concept, String file,
+	/**
+	 * Validates each item's payload and answers, and its similar's, against the kind's {@code $defs};
+	 * then, where those passed, verifies the answers with the kind's {@link AnswerVerifier} (AD-3).
+	 */
+	private void checkKinds(SchemaRegistry registry, JsonNode concept, String file,
 			List<ContentError> errors) {
 		JsonNode items = concept.get("items");
 		for (int i = 0; i < items.size(); i++) {
@@ -217,6 +312,10 @@ final class ContentLoader {
 						"no usable schema for kind \"" + kind + "\": " + ex.getMessage()));
 				continue;
 			}
+			String itemId = item.get("id").asString();
+			AnswerVerifier verifier = this.verifiers.get(kind); // null: reported by checkKindRegistry
+
+			int before = errors.size();
 			schemaErrors(payload, item.get("payload"), file, itemPath + ".payload", errors);
 			schemaErrors(answer, item.get("answer"), file, itemPath + ".answer", errors);
 			JsonNode accepted = item.get("acceptedAnswers");
@@ -225,10 +324,36 @@ final class ContentLoader {
 					schemaErrors(answer, accepted.get(a), file, itemPath + ".acceptedAnswers[" + a + "]", errors);
 				}
 			}
+			if (verifier != null && errors.size() == before) {
+				verifyAnswers(verifier, item.get("payload"), item.get("answer"), accepted, itemId, file, itemPath,
+						errors);
+			}
+
 			JsonNode similar = item.get("walkthrough").get("similar");
 			String similarPath = itemPath + ".walkthrough.similar";
+			before = errors.size();
 			schemaErrors(payload, similar.get("payload"), file, similarPath + ".payload", errors);
 			schemaErrors(answer, similar.get("answer"), file, similarPath + ".answer", errors);
+			if (verifier != null && errors.size() == before) {
+				verifyAnswers(verifier, similar.get("payload"), similar.get("answer"), null, itemId, file,
+						similarPath, errors);
+			}
+		}
+	}
+
+	/**
+	 * Runs one verification. Each problem is recorded at {@code <basePath>.answer} or
+	 * {@code <basePath>.acceptedAnswers}, by its field, with the message prefixed by the item id.
+	 */
+	private static void verifyAnswers(AnswerVerifier verifier, JsonNode payload, JsonNode answer, JsonNode accepted,
+			String itemId, String file, String basePath, List<ContentError> errors) {
+		String prefix = "item \"" + itemId + "\": ";
+		for (AnswerProblem problem : verifier.verify(payload, answer, accepted)) {
+			String path = basePath + switch (problem.field()) {
+				case ANSWER -> ".answer";
+				case ACCEPTED_ANSWERS -> ".acceptedAnswers";
+			};
+			errors.add(new ContentError(file, path, prefix + problem.message()));
 		}
 	}
 

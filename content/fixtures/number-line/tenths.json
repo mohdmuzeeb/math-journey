@@ -1,0 +1,22 @@
+{
+  "description": "Tenths on [0, 1], target 3/10: float noise (0.3 / 0.1 and 0.1 + 0.2) still lands on tick 3, 0.35 / 0.1 is 3.4999999999999996 in doubles so it rounds down to tick 3, neighbouring ticks are wrong, and drops past the ends clamp.",
+  "payload": {
+    "prompt": "Drag the point to 3/10",
+    "min": 0,
+    "max": 1,
+    "step": 0.1,
+    "target": "3/10"
+  },
+  "answer": 0.3,
+  "cases": [
+    { "response": 0.3, "canonical": 3, "verdict": "correct" },
+    { "response": 0.30000000000000004, "canonical": 3, "verdict": "correct" },
+    { "response": 0.34, "canonical": 3, "verdict": "correct" },
+    { "response": 0.26, "canonical": 3, "verdict": "correct" },
+    { "response": 0.35, "canonical": 3, "verdict": "correct" },
+    { "response": 0.2, "canonical": 2, "verdict": "wrong" },
+    { "response": 0.4, "canonical": 4, "verdict": "wrong" },
+    { "response": 1.2, "canonical": 10, "verdict": "wrong" },
+    { "response": -0.1, "canonical": 0, "verdict": "wrong" }
+  ]
+}
