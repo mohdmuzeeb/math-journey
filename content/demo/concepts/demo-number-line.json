@@ -1,12 +1,298 @@
 {
   "id": "demo-number-line",
+  "land": "numbers",
+  "ccss": "demo",
   "title": "Demo: fractions on a number line",
+  "reviewed": true,
+  "retired": false,
   "items": [
     {
       "id": "demo-number-line#three-quarters",
+      "role": "discover",
       "kind": "number-line",
-      "payload": { "prompt": "Drag the point to 3/4", "min": 0, "max": 2, "step": 0.25 },
-      "answer": 0.75
+      "payload": {
+        "prompt": "Drag the point to 3/4",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "3/4"
+      },
+      "answer": 0.75,
+      "nudge": "Count the small jumps from 0. How many quarters do you need?",
+      "hint": "Each tick is 1/4. Start at 0 and count three ticks to the right.",
+      "walkthrough": {
+        "steps": [
+          "The line is cut into quarters: every tick is 1/4.",
+          "3/4 means three of those quarters.",
+          "Start at 0 and count 1/4, 2/4, 3/4. That is the spot."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/4",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "1/4"
+          },
+          "answer": 0.25
+        }
+      }
+    },
+    {
+      "id": "demo-number-line#one-half",
+      "role": "practice",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 1/2",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "1/2"
+      },
+      "answer": 0.5,
+      "nudge": "Half of 1 is somewhere between 0 and 1. Which tick is in the middle?",
+      "hint": "Each tick is 1/4, and 2/4 is the same as 1/2.",
+      "walkthrough": {
+        "steps": [
+          "Each tick is 1/4.",
+          "1/2 is the same as 2/4.",
+          "Count two ticks to the right of 0."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 3/2",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "3/2"
+          },
+          "answer": 1.5
+        }
+      }
+    },
+    {
+      "id": "demo-number-line#five-quarters",
+      "role": "practice",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 5/4",
+        "min": 0,
+        "max": 2,
+        "step": 0.25,
+        "target": "5/4"
+      },
+      "answer": 1.25,
+      "nudge": "5/4 is more than one whole. Is the point past 1?",
+      "hint": "5/4 is 1 and 1/4. Find 1, then go one more tick.",
+      "walkthrough": {
+        "steps": [
+          "Four quarters make 1 whole.",
+          "5/4 is four quarters plus one more.",
+          "Find 1, then move one tick to the right."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 7/4",
+            "min": 0,
+            "max": 2,
+            "step": 0.25,
+            "target": "7/4"
+          },
+          "answer": 1.75
+        }
+      }
+    },
+    {
+      "id": "demo-number-line#three-fifths",
+      "role": "practice",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 3/5",
+        "min": 0,
+        "max": 1,
+        "step": 0.2,
+        "target": "3/5"
+      },
+      "answer": 0.6,
+      "nudge": "This line is cut into fifths. How many fifths do you need?",
+      "hint": "Each tick is 1/5. Count three ticks from 0.",
+      "walkthrough": {
+        "steps": [
+          "The line from 0 to 1 is cut into 5 equal parts, so each tick is 1/5.",
+          "3/5 means three of those parts.",
+          "Count 1/5, 2/5, 3/5 from 0."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 4/5",
+            "min": 0,
+            "max": 1,
+            "step": 0.2,
+            "target": "4/5"
+          },
+          "answer": 0.8
+        }
+      }
+    },
+    {
+      "id": "demo-number-line#seven-tenths",
+      "role": "practice",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 7/10",
+        "min": 0,
+        "max": 1,
+        "step": 0.1,
+        "target": "7/10"
+      },
+      "answer": 0.7,
+      "nudge": "Each tick is a tenth. Is 7/10 closer to 0 or to 1?",
+      "hint": "Count seven ticks from 0, or three ticks back from 1.",
+      "walkthrough": {
+        "steps": [
+          "The line from 0 to 1 has 10 equal parts, so each tick is 1/10.",
+          "7/10 is seven of those parts.",
+          "Count seven ticks to the right of 0."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 3/10",
+            "min": 0,
+            "max": 1,
+            "step": 0.1,
+            "target": "3/10"
+          },
+          "answer": 0.3
+        }
+      }
+    },
+    {
+      "id": "demo-number-line#three-halves",
+      "role": "review",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 3/2",
+        "min": 0,
+        "max": 3,
+        "step": 0.5,
+        "target": "3/2"
+      },
+      "answer": 1.5,
+      "nudge": "3/2 is more than 1. How many halves make 1?",
+      "hint": "Each tick is 1/2. Two halves make 1, so go one more half past 1.",
+      "walkthrough": {
+        "steps": [
+          "Each tick is 1/2.",
+          "Two halves make 1 whole.",
+          "3/2 is 1 and one more half, so it sits halfway between 1 and 2."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 5/2",
+            "min": 0,
+            "max": 3,
+            "step": 0.5,
+            "target": "5/2"
+          },
+          "answer": 2.5
+        }
+      }
+    },
+    {
+      "id": "demo-number-line#two-fifths",
+      "role": "review",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 2/5",
+        "min": 0,
+        "max": 1,
+        "step": 0.2,
+        "target": "2/5"
+      },
+      "answer": 0.4,
+      "nudge": "Each tick is a fifth. Count from 0.",
+      "hint": "2/5 is two ticks to the right of 0.",
+      "walkthrough": {
+        "steps": [
+          "Each tick on this line is 1/5.",
+          "2/5 means two of those fifths.",
+          "Count two ticks to the right of 0."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/5",
+            "min": 0,
+            "max": 1,
+            "step": 0.2,
+            "target": "1/5"
+          },
+          "answer": 0.2
+        }
+      }
+    },
+    {
+      "id": "demo-number-line#nine-tenths",
+      "role": "review",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to 9/10",
+        "min": 0,
+        "max": 1,
+        "step": 0.1,
+        "target": "9/10"
+      },
+      "answer": 0.9,
+      "nudge": "9/10 is very close to 1. Which side of the line is that?",
+      "hint": "Each tick is 1/10. 9/10 is one tick before 1.",
+      "walkthrough": {
+        "steps": [
+          "Each tick is 1/10, and ten tenths make 1.",
+          "9/10 is one tenth less than 1.",
+          "Find 1 and move one tick back to the left."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to 1/10",
+            "min": 0,
+            "max": 1,
+            "step": 0.1,
+            "target": "1/10"
+          },
+          "answer": 0.1
+        }
+      }
+    },
+    {
+      "id": "demo-number-line#negative-half",
+      "role": "challenge",
+      "kind": "number-line",
+      "payload": {
+        "prompt": "Drag the point to -1/2",
+        "min": -1,
+        "max": 1,
+        "step": 0.25,
+        "target": "-1/2"
+      },
+      "answer": -0.5,
+      "nudge": "Negative numbers live to the left of 0.",
+      "hint": "-1/2 is two quarter-ticks to the left of 0.",
+      "walkthrough": {
+        "steps": [
+          "Numbers left of 0 are negative.",
+          "Each tick is 1/4, and 1/2 is two quarters.",
+          "Start at 0 and count two ticks to the left."
+        ],
+        "similar": {
+          "payload": {
+            "prompt": "Drag the point to -3/4",
+            "min": -1,
+            "max": 1,
+            "step": 0.25,
+            "target": "-3/4"
+          },
+          "answer": -0.75
+        }
+      }
     }
   ]
 }

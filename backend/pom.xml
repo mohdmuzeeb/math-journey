@@ -18,6 +18,7 @@
 		<frontend-maven-plugin.version>2.0.2</frontend-maven-plugin.version>
 		<node.version>v22.23.3</node.version>
 		<springdoc.version>3.1.1</springdoc.version>
+		<json-schema-validator.version>3.0.8</json-schema-validator.version>
 		<frontend.dir>${project.basedir}/../frontend</frontend.dir>
 	</properties>
 
@@ -46,6 +47,13 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+
+		<!-- AD-5 / AD-12 / AD-13: content files are validated against JSON Schemas (draft 2020-12) at startup -->
+		<dependency>
+			<groupId>com.networknt</groupId>
+			<artifactId>json-schema-validator</artifactId>
+			<version>${json-schema-validator.version}</version>
 		</dependency>
 
 		<dependency>

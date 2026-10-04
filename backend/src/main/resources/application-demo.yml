@@ -1,0 +1,3 @@
+# Demo profile (./start.sh --demo): the demo curriculum and concepts instead of the real ones
+app:
+  content-root: classpath:content/demo

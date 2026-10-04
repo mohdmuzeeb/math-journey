@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mathjourney.app/content/schemas/curriculum.schema.json",
+  "title": "Curriculum",
+  "description": "content/curriculum.json: the only source of order (AD-13).",
+  "type": "object",
+  "required": ["lands", "prerequisites"],
+  "additionalProperties": false,
+  "properties": {
+    "lands": {
+      "type": "array",
+      "minItems": 5,
+      "prefixItems": [
+        { "$ref": "#/$defs/land", "properties": { "id": { "const": "numbers" } } },
+        { "$ref": "#/$defs/land", "properties": { "id": { "const": "equations" } } },
+        { "$ref": "#/$defs/land", "properties": { "id": { "const": "functions" } } },
+        { "$ref": "#/$defs/land", "properties": { "id": { "const": "shapes" } } },
+        { "$ref": "#/$defs/land", "properties": { "id": { "const": "data" } } }
+      ],
+      "items": false
+    },
+    "prerequisites": { "$ref": "#/$defs/conceptIds" }
+  },
+  "$defs": {
+    "land": {
+      "type": "object",
+      "required": ["id", "title", "concepts"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "minLength": 1 },
+        "concepts": { "$ref": "#/$defs/conceptIds" }
+      }
+    },
+    "conceptIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "concept.schema.json#/$defs/conceptId" }
+    }
+  }
+}

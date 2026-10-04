@@ -19,3 +19,5 @@ server:
 
 app:
   data-dir: ${user.home}/.mathjourney
+  # AD-5: validated at startup; schemas always come from classpath:content/schemas/
+  content-root: classpath:content
