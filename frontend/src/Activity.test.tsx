@@ -1,7 +1,15 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { Activity } from './Activity.tsx'
 import type { ConceptItem } from './api.ts'
+import {
+  layoutNumberLine,
+  pointerDrag,
+  pointerGrab,
+  pointerRelease,
+  pressKey,
+  tickClientX,
+} from './activities/number-line/testLayout.ts'
 
 afterEach(cleanup)
 
@@ -12,75 +20,106 @@ const item: ConceptItem = {
   answer: 0.75,
 }
 
-/** Drags the point and releases it at clientX (the SVG is 600px wide; 0 is at x=40, 2 at x=560). */
-function dropAt(clientX: number) {
-  const svg = screen.getByRole('img')
-  svg.getBoundingClientRect = () => ({ left: 0, top: 0, width: 600, height: 100 }) as DOMRect
-  const point = screen.getByTestId('number-line-point')
-  point.setPointerCapture = vi.fn()
-  fireEvent.pointerDown(point, { pointerId: 1, clientX: 40 })
-  fireEvent.pointerMove(point, { pointerId: 1, clientX })
-  fireEvent.pointerUp(point, { pointerId: 1, clientX })
+// The line runs 0 to 2 in quarters: tick 3 is 0.75 and tick 4 is 1.0.
+const LAST = 8
+
+/** Drags the point onto a tick's drop zone with the mouse and releases it there. */
+async function dropOnTick(tick: number) {
+  await pointerDrag(layoutNumberLine(), tickClientX(tick, LAST))
 }
 
 const checkButton = () => screen.getByRole('button', { name: 'Check' }) as HTMLButtonElement
+
+/** The feedback strip (dnd-kit's own live region is also a status, so pick the strip by its class). */
+const strip = () => screen.queryAllByRole('status').find((el) => el.classList.contains('feedback')) ?? null
 
 describe('Activity', () => {
   it('starts with the prompt, a disabled Check and no strip', () => {
     render(<Activity item={item} />)
     expect(screen.getByText('Drag the point to 3/4')).toBeTruthy()
     expect(checkButton().disabled).toBe(true)
-    expect(screen.queryByRole('status')).toBeNull()
+    expect(strip()).toBeNull()
   })
 
-  it('enables Check once there is an answer, without judging it yet', () => {
+  it('enables Check once there is an answer, without judging it yet', async () => {
     render(<Activity item={item} />)
-    dropAt(300)
+    await dropOnTick(4)
     expect(checkButton().disabled).toBe(false)
-    expect(screen.queryByRole('status')).toBeNull()
+    expect(strip()).toBeNull()
   })
 
-  it('shows the green strip and focuses it for a right answer', () => {
+  it('shows the green strip and focuses it for a right answer', async () => {
     render(<Activity item={item} />)
-    dropAt(235) // 0.75
+    await dropOnTick(3) // 0.75
     fireEvent.click(checkButton())
-    const strip = screen.getByRole('status')
-    expect(strip.textContent).toBe('You did it!')
-    expect(strip.className).toContain('feedback--correct')
-    expect(document.activeElement).toBe(strip)
+    const shown = strip()!
+    expect(shown.textContent).toBe('You did it!')
+    expect(shown.className).toContain('feedback--correct')
+    expect(document.activeElement).toBe(shown)
   })
 
-  it('shows the amber strip and focuses it for a wrong answer', () => {
+  it('shows the amber strip and focuses it for a wrong answer', async () => {
     render(<Activity item={item} />)
-    dropAt(300) // 1.0
+    await dropOnTick(4) // 1.0
     fireEvent.click(checkButton())
-    const strip = screen.getByRole('status')
-    expect(strip.textContent).toBe('Not quite — have another look.')
-    expect(strip.className).toContain('feedback--nudge')
-    expect(document.activeElement).toBe(strip)
+    const shown = strip()!
+    expect(shown.textContent).toBe('Not quite — have another look.')
+    expect(shown.className).toContain('feedback--nudge')
+    expect(document.activeElement).toBe(shown)
   })
 
-  it('clears the strip on her next grab, then judges the new drop', () => {
+  it('clears the strip on her next grab, then judges the new drop', async () => {
     render(<Activity item={item} />)
-    dropAt(300)
+    await dropOnTick(4)
     fireEvent.click(checkButton())
-    expect(screen.getByRole('status')).toBeTruthy()
+    expect(strip()).toBeTruthy()
 
-    fireEvent.pointerDown(screen.getByTestId('number-line-point'), { pointerId: 1, clientX: 300 })
-    expect(screen.queryByRole('status')).toBeNull()
-    fireEvent.pointerUp(screen.getByTestId('number-line-point'), { pointerId: 1, clientX: 235 })
-    fireEvent.click(checkButton())
-    expect(screen.getByRole('status').textContent).toBe('You did it!')
-  })
-
-  it('disables Check again when a grab is cancelled before a new drop', () => {
-    render(<Activity item={item} />)
-    dropAt(300)
-    expect(checkButton().disabled).toBe(false)
-    const point = screen.getByTestId('number-line-point')
-    fireEvent.pointerDown(point, { pointerId: 1, clientX: 300 })
-    fireEvent.pointerCancel(point, { pointerId: 1 })
+    const point = layoutNumberLine()
+    pointerGrab(point, tickClientX(3, LAST))
+    expect(strip()).toBeNull()
     expect(checkButton().disabled).toBe(true)
+    await pointerRelease(point, tickClientX(3, LAST))
+    fireEvent.click(checkButton())
+    expect(strip()!.textContent).toBe('You did it!')
+  })
+
+  it('keeps Check disabled when a grab is cancelled before any answer', async () => {
+    render(<Activity item={item} />)
+    layoutNumberLine().focus()
+    await pressKey('Space')
+    await pressKey('ArrowRight')
+    await pressKey('Escape')
+    expect(checkButton().disabled).toBe(true)
+  })
+
+  it('re-enables Check when a grab after an answer is cancelled', async () => {
+    render(<Activity item={item} />)
+    await dropOnTick(3)
+    fireEvent.click(checkButton())
+    expect(strip()!.textContent).toBe('You did it!')
+
+    const point = layoutNumberLine()
+    point.focus()
+    await pressKey('Space')
+    expect(strip()).toBeNull()
+    expect(checkButton().disabled).toBe(true)
+    await pressKey('ArrowRight')
+    await pressKey('Escape')
+    expect(checkButton().disabled).toBe(false)
+    fireEvent.click(checkButton())
+    expect(strip()!.textContent).toBe('You did it!')
+  })
+
+  it('re-enables Check when a later drop misses the line', async () => {
+    render(<Activity item={item} />)
+    await dropOnTick(4)
+    const point = layoutNumberLine()
+    pointerGrab(point, tickClientX(6, LAST), -200)
+    expect(checkButton().disabled).toBe(true)
+    await pointerRelease(point, tickClientX(6, LAST), -200)
+    expect(checkButton().disabled).toBe(false)
+    fireEvent.click(checkButton())
+    expect(strip()!.textContent).toBe('Not quite — have another look.')
   })
 
   it('shows a friendly message for an unknown kind instead of crashing', () => {

@@ -63,6 +63,22 @@
 
   /* sizes (components.button-primary.minHeight, drag-tile border, Layout max content width) */
   --size-touch-min: 44px;
+  --size-drag-min: 48px; /* components.drag-tile.minSize */
+  --size-drag-centre: calc(var(--size-drag-min) / 2);
+  --offset-drag-centre: calc(-1 * var(--size-drag-centre)); /* margin that centres a drag tile without a transform */
   --border-width: 2px;
   --content-max-width: 880px;
+
+  /* number line (a drag tile centred on the axis, with tick labels below it) */
+  --size-number-line-track: 120px;
+  --offset-number-line-label: calc(var(--size-drag-centre) + var(--space-3));
+
+  /* layers inside the number line: zone bands under the axis and ticks, the point on top */
+  --layer-number-line-zone: 0;
+  --layer-number-line-axis: 1;
+  --layer-number-line-point: 2;
+
+  /* motion (not in DESIGN.md, which names the snap and glide-back but no timing; used only
+     under prefers-reduced-motion: no-preference) */
+  --motion-glide: 180ms ease-out;
 }

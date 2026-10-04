@@ -104,36 +104,122 @@ body {
   color: var(--color-nudge-ink);
 }
 
-/* Number line */
+/* Number line: a track of tick bands (drop zones) with one draggable point (a drag tile) */
 .number-line {
-  display: block;
-  width: 100%;
-  touch-action: none;
+  padding: 0 var(--space-6);
   user-select: none;
 }
 
-.number-line__axis,
+.number-line__track {
+  position: relative;
+  height: var(--size-number-line-track);
+}
+
+.number-line__axis {
+  position: absolute;
+  z-index: var(--layer-number-line-axis);
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: var(--border-width);
+  background: var(--color-ink);
+  transform: translateY(-50%);
+}
+
+/* Drop zone: invisible band until the point hovers it, then components.drop-zone */
+.number-line__zone {
+  position: absolute;
+  z-index: var(--layer-number-line-zone);
+  top: 0;
+  bottom: 0;
+  border: var(--border-width) dashed transparent;
+  border-radius: var(--radius-md);
+}
+
+.number-line__zone--over {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+}
+
 .number-line__tick {
-  stroke: var(--color-ink);
-  stroke-width: var(--border-width);
+  position: absolute;
+  z-index: var(--layer-number-line-axis);
+  top: 50%;
+  width: var(--border-width);
+  height: var(--space-4);
+  background: var(--color-ink);
+  transform: translate(-50%, -50%);
 }
 
 .number-line__label {
-  fill: var(--color-ink-muted);
-  font-family: var(--font-family);
+  position: absolute;
+  top: var(--offset-number-line-label);
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--color-ink-muted);
   font-size: var(--font-label-size);
   font-weight: var(--font-label-weight);
+  line-height: var(--font-label-line-height);
+  white-space: nowrap;
 }
 
+/* Point: components.drag-tile at rest, components.drag-tile-active while held. Centred on its tick
+   with negative margins, not a transform: dnd-kit measures the point ignoring its transform, so the
+   only transform on it is dnd-kit's drag translate. */
 .number-line__point {
-  fill: var(--color-primary);
-  stroke: var(--color-surface-raised);
-  stroke-width: var(--border-width);
+  position: absolute;
+  top: 50%;
+  z-index: var(--layer-number-line-point);
+  margin-top: var(--offset-drag-centre);
+  margin-left: var(--offset-drag-centre);
+  width: var(--size-drag-min);
+  height: var(--size-drag-min);
+  min-width: var(--size-drag-min);
+  min-height: var(--size-drag-min);
+  padding: 0;
+  background: var(--color-surface-raised);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
   cursor: grab;
+  touch-action: none;
+}
+
+/* The exact spot on the line */
+.number-line__point::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  transform: translate(-50%, -50%);
+}
+
+.number-line__point:focus-visible {
+  outline: var(--border-width) solid var(--color-primary-strong);
+  outline-offset: var(--border-width);
 }
 
 .number-line__point--dragging {
-  fill: var(--color-primary-strong);
-  filter: drop-shadow(var(--shadow-drag));
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-drag);
   cursor: grabbing;
+}
+
+.number-line__point--dragging::after {
+  background: var(--color-on-primary);
+}
+
+/* Snap onto a tick and glide back from a missed drop; instant moves under reduced motion */
+@media (prefers-reduced-motion: no-preference) {
+  .number-line__point:not(.number-line__point--dragging) {
+    transition: left var(--motion-glide), transform var(--motion-glide);
+  }
+}
+
+.number-line--still .number-line__point {
+  transition: none;
 }
