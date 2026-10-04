@@ -17,6 +17,7 @@
 		<java.version>25</java.version>
 		<frontend-maven-plugin.version>2.0.2</frontend-maven-plugin.version>
 		<node.version>v22.23.3</node.version>
+		<springdoc.version>3.1.1</springdoc.version>
 		<frontend.dir>${project.basedir}/../frontend</frontend.dir>
 	</properties>
 
@@ -24,6 +25,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		<!-- AD-7: publishes the OpenAPI document the frontend API types are generated from -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc.version}</version>
 		</dependency>
 
 		<dependency>
@@ -44,11 +51,6 @@
 				<directory>${project.basedir}/../content</directory>
 				<targetPath>content</targetPath>
 			</resource>
-			<!-- AD-1: the built React app is served by Spring from static/ -->
-			<resource>
-				<directory>${frontend.dir}/dist</directory>
-				<targetPath>static</targetPath>
-			</resource>
 		</resources>
 		<plugins>
 			<plugin>
@@ -63,10 +65,15 @@
 					<workingDirectory>${frontend.dir}</workingDirectory>
 					<installDirectory>${frontend.dir}</installDirectory>
 				</configuration>
+				<!--
+					Build order (AD-7): compile -> test (OpenApiExportTest writes ../frontend/openapi.json)
+					-> prepare-package (generate API types, tsc, vite build into target/classes/static, AD-1)
+					-> package (jar) -> integration-test (Vitest). With -DskipTests the committed openapi.json is used.
+				-->
 				<executions>
 					<execution>
 						<id>install-node-and-npm</id>
-						<phase>generate-resources</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>install-node-and-npm</goal>
 						</goals>
@@ -76,7 +83,7 @@
 					</execution>
 					<execution>
 						<id>npm-ci</id>
-						<phase>generate-resources</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>npm</goal>
 						</goals>
@@ -86,18 +93,18 @@
 					</execution>
 					<execution>
 						<id>npm-build</id>
-						<phase>generate-resources</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>npm</goal>
 						</goals>
 						<configuration>
-							<arguments>run build</arguments>
+							<arguments>run build -- --outDir ${project.build.outputDirectory}/static --emptyOutDir</arguments>
 						</configuration>
 					</execution>
 					<execution>
-						<!-- Runs in the test phase, so -DskipTests skips it too -->
+						<!-- Runs in integration-test, so -DskipTests skips it too -->
 						<id>npm-test</id>
-						<phase>test</phase>
+						<phase>integration-test</phase>
 						<goals>
 							<goal>npm</goal>
 						</goals>

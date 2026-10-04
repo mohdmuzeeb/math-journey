@@ -1,0 +1,83 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "OpenAPI definition",
+    "version" : "v0"
+  },
+  "servers" : [ {
+    "url" : "http://localhost",
+    "description" : "Generated server url"
+  } ],
+  "paths" : {
+    "/api/concepts/{id}" : {
+      "get" : {
+        "tags" : [ "concept-controller" ],
+        "operationId" : "concept",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConceptResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ConceptItemResponse" : {
+        "type" : "object",
+        "description" : "One activity item of a concept",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string"
+          },
+          "payload" : {
+            "type" : "object",
+            "additionalProperties" : { },
+            "description" : "Opaque kind-specific payload; typed only by the content schemas (AD-7)"
+          },
+          "answer" : {
+            "description" : "Opaque canonical answer, any JSON value (AD-3)"
+          }
+        },
+        "required" : [ "answer", "id", "kind", "payload" ]
+      },
+      "ConceptResponse" : {
+        "type" : "object",
+        "description" : "A concept and its items",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ConceptItemResponse"
+            }
+          }
+        },
+        "required" : [ "id", "items", "title" ]
+      }
+    }
+  }
+}

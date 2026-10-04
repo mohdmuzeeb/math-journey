@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import app.mathjourney.content.ConceptCatalog;
-import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/concepts")
@@ -16,13 +16,17 @@ class ConceptController {
 
 	private final ConceptCatalog catalog;
 
-	ConceptController(ConceptCatalog catalog) {
+	private final ObjectMapper objectMapper;
+
+	ConceptController(ConceptCatalog catalog, ObjectMapper objectMapper) {
 		this.catalog = catalog;
+		this.objectMapper = objectMapper;
 	}
 
 	@GetMapping("/{id}")
-	JsonNode concept(@PathVariable String id) {
+	ConceptResponse concept(@PathVariable String id) {
 		return this.catalog.findById(id)
+			.map((node) -> this.objectMapper.treeToValue(node, ConceptResponse.class))
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No concept " + id));
 	}
 

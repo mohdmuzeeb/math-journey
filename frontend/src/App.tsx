@@ -35,7 +35,8 @@ function App() {
 
   const item = state.concept.items[0]
   if (!item) return <main><p>No lesson yet</p></main>
-  const payload = item.payload as NumberLinePayload
+  // Payloads are opaque in the API contract (AD-7); their types will come from the content schemas.
+  const payload = item.payload as unknown as NumberLinePayload
   const answer = item.answer as number
 
   return (

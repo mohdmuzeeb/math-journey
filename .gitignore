@@ -4,3 +4,4 @@ frontend/dist/
 frontend/node/
 .idea/
 .DS_Store
+frontend/src/api/schema.d.ts
