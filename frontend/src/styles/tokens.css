@@ -72,6 +72,10 @@
   /* number line (a drag tile centred on the axis, with tick labels below it) */
   --size-number-line-track: 120px;
   --offset-number-line-label: calc(var(--size-drag-centre) + var(--space-3));
+  /* the unplaced point's parking spot: its centre this far left of the line's start, so the whole
+     tile sits outside every drop zone with a small gap; the line leaves room for it */
+  --offset-number-line-park: calc(-1 * (var(--size-drag-centre) + var(--space-2)));
+  --space-number-line-park: calc(var(--size-drag-min) + var(--space-2));
 
   /* layers inside the number line: zone bands under the axis and ticks, the point on top */
   --layer-number-line-zone: 0;

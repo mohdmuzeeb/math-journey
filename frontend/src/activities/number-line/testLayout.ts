@@ -6,6 +6,11 @@ export const TRACK_WIDTH = 800
 export const TRACK_HEIGHT = 120
 export const LINE_Y = TRACK_HEIGHT / 2
 const POINT_SIZE = 48
+/**
+ * The unplaced point's centre, left of the track's start: tokens.css --offset-number-line-park,
+ * half the 48px tile plus --space-2 (8px), so the whole tile sits outside every zone.
+ */
+export const PARK_X = -(POINT_SIZE / 2 + 8)
 
 function rect(left: number, top: number, width: number, height: number): DOMRect {
   return {
@@ -32,11 +37,15 @@ export function layoutNumberLine(): HTMLElement {
   const point = screen.getByTestId('number-line-point')
   // dnd-kit measures the point ignoring its CSS transform, so this is the untransformed box: its
   // left edge at the tick (`left: <tick>%`), pulled back by app.css's negative margins
-  // (--offset-drag-centre, half the 48px tile) so it is centred on the tick and the axis.
+  // (--offset-drag-centre, half the 48px tile) so it is centred on the tick and the axis. Unplaced,
+  // it has no inline `left` and app.css parks its centre at PARK_X.
   point.getBoundingClientRect = () => {
     // Centring with a percentage transform would put the visible point somewhere dnd-kit does not see.
     if (point.style.transform.includes('%')) throw new Error(`point is centred with a transform: ${point.style.transform}`)
-    return rect(percentOf(point.style.left) - POINT_SIZE / 2, LINE_Y - POINT_SIZE / 2, POINT_SIZE, POINT_SIZE)
+    const unplaced = point.classList.contains('number-line__point--unplaced')
+    if (unplaced === (point.style.left !== '')) throw new Error(`unplaced point with inline left: ${point.style.left}`)
+    const centreX = unplaced ? PARK_X : percentOf(point.style.left)
+    return rect(centreX - POINT_SIZE / 2, LINE_Y - POINT_SIZE / 2, POINT_SIZE, POINT_SIZE)
   }
   return point
 }
@@ -45,12 +54,14 @@ export function layoutNumberLine(): HTMLElement {
 export const tickClientX = (index: number, lastIndex: number) => (index / lastIndex) * TRACK_WIDTH
 
 /**
- * Presses on the point and drags it to (clientX, clientY), leaving it held. The first move only
- * passes the activation distance (dnd-kit starts the drag on it); the second moves the point.
+ * Presses on the point and drags the pointer to (clientX, clientY), leaving it held. The first move
+ * only passes the activation distance (dnd-kit starts the drag on it); the second moves the point.
+ * The press is `grabOffset` px right of the point's centre, so the point's centre ends up at
+ * clientX - grabOffset.
  */
-export function pointerGrab(point: HTMLElement, clientX: number, clientY = LINE_Y) {
+export function pointerGrab(point: HTMLElement, clientX: number, clientY = LINE_Y, grabOffset = 0) {
   const from = point.getBoundingClientRect()
-  const startX = from.left + from.width / 2
+  const startX = from.left + from.width / 2 + grabOffset
   fireEvent.pointerDown(point, { pointerId: 1, isPrimary: true, button: 0, clientX: startX, clientY: LINE_Y })
   fireEvent.pointerMove(point, { pointerId: 1, isPrimary: true, clientX: startX + 10, clientY: LINE_Y })
   fireEvent.pointerMove(point, { pointerId: 1, isPrimary: true, clientX, clientY })
@@ -75,9 +86,9 @@ export async function pointerRelease(point: HTMLElement, clientX: number, client
   await flushTimers(CLICK_GUARD_MS)
 }
 
-/** Presses on the point, drags it to (clientX, clientY) and releases it there. */
-export async function pointerDrag(point: HTMLElement, clientX: number, clientY = LINE_Y) {
-  pointerGrab(point, clientX, clientY)
+/** Presses on the point (`grabOffset` px right of its centre), drags it to (clientX, clientY) and releases it there. */
+export async function pointerDrag(point: HTMLElement, clientX: number, clientY = LINE_Y, grabOffset = 0) {
+  pointerGrab(point, clientX, clientY, grabOffset)
   await pointerRelease(point, clientX, clientY)
 }
 

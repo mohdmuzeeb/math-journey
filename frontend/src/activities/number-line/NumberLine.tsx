@@ -3,7 +3,6 @@ import {
   DndContext,
   KeyboardSensor,
   PointerSensor,
-  pointerWithin,
   useDraggable,
   useDroppable,
   useSensor,
@@ -12,6 +11,7 @@ import {
   type ClientRect,
   type CollisionDetection,
   type DragEndEvent,
+  type DragStartEvent,
   type KeyboardCoordinateGetter,
   type UniqueIdentifier,
 } from '@dnd-kit/core'
@@ -52,6 +52,15 @@ function tickX(rect: ClientRect, index: number, last: number): number {
   return rect.left + rect.width / 2
 }
 
+/** The zone whose rect contains a point, if any. Zones tile the line, so at most a shared edge is ambiguous. */
+function zoneContaining(x: number, y: number, rects: Map<UniqueIdentifier, ClientRect>, last: number): number | undefined {
+  for (let index = 0; index <= last; index++) {
+    const rect = rects.get(zoneId(index))
+    if (rect && x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return index
+  }
+  return undefined
+}
+
 /** The tick nearest a horizontal pixel position, among the measured zones. */
 function nearestTick(x: number, rects: Map<UniqueIdentifier, ClientRect>, last: number): number | undefined {
   let best: { index: number; distance: number } | undefined
@@ -65,19 +74,22 @@ function nearestTick(x: number, rects: Map<UniqueIdentifier, ClientRect>, last: 
 }
 
 /**
- * The number-line activity: the prompt plus a line with one draggable point. The point moves by
- * mouse, touch (pointer events) or keyboard, and drops onto one zone per tick. A drop on a zone
- * reports that tick's value; a drop off the line or a cancel returns the point to where it was.
+ * The number-line activity: the prompt plus a line with one draggable point. The point starts
+ * unplaced, parked just left of the line, so every tick (`min` included) is answered by a drop and
+ * the start hints at nothing. It moves by mouse, touch (pointer events) or keyboard, and drops onto
+ * one zone per tick. A drop on a zone reports that tick's value; a drop off the line or a cancel
+ * returns the point to where it was: its tick, or the parking spot before the first placement.
  */
 export function NumberLine({ payload, onResponse, onInteract }: RendererProps<NumberLinePayload, number>) {
   const { prompt, min, max, step } = payload
   const last = lastTickIndex(min, max, step)
-  const [index, setIndex] = useState(0)
-  // Whether the point's resting tick is a response she gave (it starts on `min` without one).
-  const answered = useRef(false)
+  // The tick the point rests on, which is always a response she gave; null while it is unplaced.
+  const [index, setIndex] = useState<number | null>(null)
   // Set on pick-up: dnd-kit reports the starting zone as "over" straight away, which would replace the
   // pick-up announcement before it is read, so that first report stays silent.
   const justPickedUp = useRef(false)
+  // Whether the current drag was started from the keyboard (which starts an unplaced point at tick 0).
+  const byKeyboard = useRef(false)
   const reducedMotion = useReducedMotion()
 
   const label = (i: number) => formatTick(tickValue(i, min, step))
@@ -86,12 +98,19 @@ export function NumberLine({ payload, onResponse, onInteract }: RendererProps<Nu
     return i === undefined ? undefined : label(i)
   }
 
-  /** Pointer: the zone under the pointer, or none off the line. Keyboard: the nearest tick. */
+  /**
+   * Pointer: the zone containing the point's centre (not the pointer, which can be up to half the
+   * 48px point away from it), or none off the line. Keyboard: the tick nearest the point's centre.
+   */
   const collisionDetection: CollisionDetection = (args) => {
-    if (args.pointerCoordinates) return pointerWithin(args)
-    const nearest = nearestTick(args.collisionRect.left + args.collisionRect.width / 2, args.droppableRects, last)
-    if (nearest === undefined) return []
-    const container = args.droppableContainers.find((c) => c.id === zoneId(nearest))
+    const { collisionRect, droppableRects } = args
+    const centreX = collisionRect.left + collisionRect.width / 2
+    const centreY = collisionRect.top + collisionRect.height / 2
+    const hit = args.pointerCoordinates
+      ? zoneContaining(centreX, centreY, droppableRects, last)
+      : nearestTick(centreX, droppableRects, last)
+    if (hit === undefined) return []
+    const container = args.droppableContainers.find((c) => c.id === zoneId(hit))
     return container ? [{ id: container.id, data: { droppableContainer: container, value: 0 } }] : []
   }
 
@@ -114,9 +133,17 @@ export function NumberLine({ payload, onResponse, onInteract }: RendererProps<Nu
     useSensor(KeyboardSensor, { coordinateGetter }),
   )
 
-  /** Back to the tick she grabbed it from; if that tick was her answer, it is her answer again. */
+  /**
+   * Back to where she grabbed it from: its tick, which is her answer again, or the parking spot
+   * before the first placement, which reports nothing.
+   */
   const restore = () => {
-    if (answered.current) onResponse(tickValue(index, min, step))
+    if (index !== null) onResponse(tickValue(index, min, step))
+  }
+
+  const handleDragStart = ({ activatorEvent }: DragStartEvent) => {
+    byKeyboard.current = activatorEvent instanceof KeyboardEvent
+    onInteract()
   }
 
   const handleDragEnd = ({ over }: DragEndEvent) => {
@@ -126,29 +153,37 @@ export function NumberLine({ payload, onResponse, onInteract }: RendererProps<Nu
       return
     }
     setIndex(dropped)
-    answered.current = true
     onResponse(tickValue(dropped, min, step))
   }
+
+  /** Where the point goes back to, for the announcements. */
+  const home = () => (index === null ? 'its start, beside the line' : label(index))
 
   const announcements: Announcements = {
     onDragStart: () => {
       justPickedUp.current = true
-      return `You picked up the point. It's on ${label(index)}.`
+      if (index !== null) return `You picked up the point. It's on ${label(index)}.`
+      // From the keyboard an unplaced point starts over the first tick, so Space then Enter answers it.
+      return byKeyboard.current
+        ? `You picked up the point. It's not placed yet; it starts over ${label(0)}.`
+        : "You picked up the point. It's not placed yet."
     },
     onDragOver: ({ over }) => {
       const value = overLabel(over)
       const first = justPickedUp.current
       justPickedUp.current = false
-      if (first && value === label(index)) return undefined
+      // The first report only repeats where the pick-up announcement said the point is.
+      const start = index !== null ? label(index) : byKeyboard.current ? label(0) : undefined
+      if (first && value === start) return undefined
       return value === undefined ? 'The point is off the line.' : `The point is over ${value}.`
     },
     onDragEnd: ({ over }) => {
       const value = overLabel(over)
       return value === undefined
-        ? `That's off the line, so the point went back to ${label(index)}.`
+        ? `That's off the line, so the point went back to ${home()}.`
         : `You dropped the point on ${value}.`
     },
-    onDragCancel: () => `Okay, the point went back to ${label(index)}.`,
+    onDragCancel: () => `Okay, the point went back to ${home()}.`,
   }
 
   const ticks = Array.from({ length: last + 1 }, (_, i) => i)
@@ -159,7 +194,7 @@ export function NumberLine({ payload, onResponse, onInteract }: RendererProps<Nu
       <DndContext
         sensors={sensors}
         collisionDetection={collisionDetection}
-        onDragStart={onInteract}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={restore}
         accessibility={{
@@ -186,7 +221,7 @@ export function NumberLine({ payload, onResponse, onInteract }: RendererProps<Nu
                 <span className="number-line__label">{label(i)}</span>
               </div>
             ))}
-            <Point percent={tickPercent(index, last)} label={label(index)} />
+            <Point percent={index === null ? null : tickPercent(index, last)} label={index === null ? null : label(index)} />
           </div>
         </div>
       </DndContext>
@@ -212,24 +247,34 @@ function Zone({ index, last, label }: { index: number; last: number; label: stri
   )
 }
 
-/** The draggable point: a button of at least 48px, resting on its tick. */
-function Point({ percent, label }: { percent: number; label: string }) {
+/**
+ * The draggable point: a button of at least 48px, resting on its tick, or parked just left of the
+ * line (outside every zone) while unplaced (`percent` and `label` null).
+ */
+function Point({ percent, label }: { percent: number | null; label: string | null }) {
   const { setNodeRef, attributes, listeners, transform, isDragging } = useDraggable({
     id: POINT_ID,
     attributes: { roleDescription: 'draggable point' },
   })
   const x = transform?.x ?? 0
   const y = transform?.y ?? 0
+  const className = ['number-line__point']
+  if (percent === null) className.push('number-line__point--unplaced')
+  if (isDragging) className.push('number-line__point--dragging')
   return (
     <button
       ref={setNodeRef}
       type="button"
-      className={isDragging ? 'number-line__point number-line__point--dragging' : 'number-line__point'}
-      style={{ left: `${percent}%`, transform: `translate3d(${x}px, ${y}px, 0)` }}
+      className={className.join(' ')}
+      style={{
+        // Unplaced, the parking spot comes from app.css (number-line__point--unplaced)
+        ...(percent === null ? {} : { left: `${percent}%` }),
+        transform: `translate3d(${x}px, ${y}px, 0)`,
+      }}
       data-testid={POINT_ID}
       {...attributes}
       {...listeners}
-      aria-label={`Number line point at ${label}`}
+      aria-label={label === null ? 'Number line point, not placed yet' : `Number line point at ${label}`}
     />
   )
 }

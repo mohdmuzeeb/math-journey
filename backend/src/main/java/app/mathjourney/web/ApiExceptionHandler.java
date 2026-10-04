@@ -18,7 +18,8 @@ import jakarta.servlet.http.HttpServletRequest;
  * Spring MVC's own exceptions (including {@code NoResourceFoundException} for unknown
  * {@code /api/**} paths and {@code ResponseStatusException}) are handled by the base class. An
  * exception class annotated {@link ResponseStatus} gets that status, and the annotation's
- * {@code reason} as its detail; anything else is a generic 500.
+ * {@code reason} as its detail, and is logged when that status is 5xx; anything else is logged and
+ * becomes a generic 500.
  */
 @RestControllerAdvice
 class ApiExceptionHandler extends ResponseEntityExceptionHandler {
@@ -31,6 +32,11 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	ProblemDetail unexpected(Exception ex, HttpServletRequest request) {
 		ResponseStatus annotated = AnnotatedElementUtils.findMergedAnnotation(ex.getClass(), ResponseStatus.class);
 		if (annotated != null) {
+			if (annotated.code().is5xxServerError()) {
+				// a server failure, even when the exception names its status, so keep its trace
+				log.error("[web] {} handling {} {}", annotated.code().value(), request.getMethod(),
+						request.getRequestURI(), ex);
+			}
 			ProblemDetail problem = ProblemDetail.forStatus(annotated.code());
 			if (StringUtils.hasText(annotated.reason())) {
 				problem.setDetail(annotated.reason());

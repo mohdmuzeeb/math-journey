@@ -294,6 +294,24 @@ class ContentLoaderTest {
 	}
 
 	@Test
+	void itemPayloadThatIsNotWholeSteps() {
+		assertThat(errors("payload-not-whole-steps")).singleElement().satisfies((error) -> {
+			assertThat(error.file()).isEqualTo(CONCEPT_FILE);
+			assertThat(error.jsonPath()).isEqualTo("$.items[3].payload");
+			assertThat(error.message()).contains("8.NS.1-test-concept#item-3", "whole number of steps");
+		});
+	}
+
+	@Test
+	void similarPayloadWithBadGeometry() {
+		assertThat(errors("bad-similar-geometry")).singleElement().satisfies((error) -> {
+			assertThat(error.file()).isEqualTo(CONCEPT_FILE);
+			assertThat(error.jsonPath()).isEqualTo("$.items[2].walkthrough.similar.payload");
+			assertThat(error.message()).contains("8.NS.1-test-concept#item-2", "at most 40 steps");
+		});
+	}
+
+	@Test
 	void acceptedAnswersOnANumberLineItem() {
 		assertThat(errors("accepted-answers")).singleElement().satisfies((error) -> {
 			assertThat(error.file()).isEqualTo(CONCEPT_FILE);
