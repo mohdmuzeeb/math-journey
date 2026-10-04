@@ -1,10 +1,15 @@
 package app.mathjourney.content;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+
+import tools.jackson.databind.JsonNode;
 
 /**
  * One minimal content root per error case under {@code src/test/resources/content-cases/}. Every
@@ -14,8 +19,13 @@ class ContentLoaderTest {
 
 	private static final String CONCEPT_FILE = "concepts/8.NS.1-test-concept.json";
 
+	/** A loader with the real answer verifiers, as Spring wires it. */
+	private static ContentLoader loader(String root) {
+		return new ContentLoader(root, TestVerifiers.byKind());
+	}
+
 	private static ContentLoader.Result load(String caseName) {
-		return new ContentLoader("classpath:content-cases/" + caseName).load();
+		return loader("classpath:content-cases/" + caseName).load();
 	}
 
 	private static List<ContentError> errors(String caseName) {
@@ -27,14 +37,14 @@ class ContentLoaderTest {
 
 	@Test
 	void realContentLoadsWithNoConcepts() {
-		ContentLoader.Result result = new ContentLoader("classpath:content").load();
+		ContentLoader.Result result = loader("classpath:content").load();
 		assertThat(result.errors()).isEmpty();
 		assertThat(result.concepts()).isEmpty();
 	}
 
 	@Test
 	void demoContentLoadsAndIsReviewed() {
-		ContentLoader.Result result = new ContentLoader("classpath:content/demo").load();
+		ContentLoader.Result result = loader("classpath:content/demo").load();
 		assertThat(result.errors()).isEmpty();
 		assertThat(result.concepts()).containsOnlyKeys("demo-number-line");
 		CatalogConcept concept = result.concepts().get("demo-number-line");
@@ -218,6 +228,81 @@ class ContentLoaderTest {
 			assertThat(error.file()).isEqualTo(CONCEPT_FILE);
 			assertThat(error.jsonPath()).isEqualTo("$.items[2].acceptedAnswers[0]");
 		});
+	}
+
+	@Test
+	void wrongItemAnswer() {
+		assertThat(errors("wrong-answer")).singleElement().satisfies((error) -> {
+			assertThat(error.file()).isEqualTo(CONCEPT_FILE);
+			assertThat(error.jsonPath()).isEqualTo("$.items[1].answer");
+			assertThat(error.message()).contains("8.NS.1-test-concept#item-1", "0.75", "0.5");
+		});
+	}
+
+	@Test
+	void answerIsReadFromItsExactDecimalText() {
+		// 0.50000000000000001 would read as the double 0.5; the loader keeps the exact decimal
+		assertThat(errors("answer-beyond-double")).singleElement().satisfies((error) -> {
+			assertThat(error.file()).isEqualTo(CONCEPT_FILE);
+			assertThat(error.jsonPath()).isEqualTo("$.items[1].answer");
+			assertThat(error.message()).contains("8.NS.1-test-concept#item-1", "0.50000000000000001");
+		});
+	}
+
+	@Test
+	void wrongSimilarAnswer() {
+		assertThat(errors("wrong-similar-answer")).singleElement().satisfies((error) -> {
+			assertThat(error.file()).isEqualTo(CONCEPT_FILE);
+			assertThat(error.jsonPath()).isEqualTo("$.items[2].walkthrough.similar.answer");
+			assertThat(error.message()).contains("8.NS.1-test-concept#item-2", "0.5", "0.25");
+		});
+	}
+
+	@Test
+	void acceptedAnswersOnANumberLineItem() {
+		assertThat(errors("accepted-answers")).singleElement().satisfies((error) -> {
+			assertThat(error.file()).isEqualTo(CONCEPT_FILE);
+			assertThat(error.jsonPath()).isEqualTo("$.items[1].acceptedAnswers");
+			assertThat(error.message()).contains("8.NS.1-test-concept#item-1", "acceptedAnswers");
+		});
+	}
+
+	@Test
+	void kindWithoutAVerifier() {
+		ContentLoader.Result result = new ContentLoader("classpath:content/demo", Map.of()).load();
+		assertThat(result.concepts()).isEmpty();
+		assertThat(result.errors()).singleElement().satisfies((error) -> {
+			assertThat(error.file()).isEqualTo("schemas/concept.schema.json");
+			assertThat(error.jsonPath()).isEqualTo("$.$defs.item.properties.kind.enum");
+			assertThat(error.message()).contains("\"number-line\"", "AnswerVerifier");
+		});
+	}
+
+	@Test
+	void verifierForAnUnknownKind() {
+		AnswerVerifier extra = new AnswerVerifier() {
+			@Override
+			public String kind() {
+				return "balance-scale";
+			}
+
+			@Override
+			public List<String> verify(JsonNode payload, JsonNode answer, JsonNode acceptedAnswers) {
+				return List.of();
+			}
+		};
+		Map<String, AnswerVerifier> verifiers = new HashMap<>(TestVerifiers.byKind());
+		verifiers.put(extra.kind(), extra);
+		assertThat(new ContentLoader("classpath:content/demo", verifiers).load().errors()).singleElement()
+			.satisfies((error) -> assertThat(error.message()).contains("\"balance-scale\"", "kind enum",
+					"balance-scale.schema.json"));
+	}
+
+	@Test
+	void twoVerifiersForOneKindIsAProgrammingError() {
+		assertThatIllegalStateException()
+			.isThrownBy(() -> ContentLoader.byKind(List.of(new NumberLineVerifier(), new NumberLineVerifier())))
+			.withMessageContaining("number-line");
 	}
 
 	@Test

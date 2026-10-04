@@ -1,0 +1,22 @@
+{
+  "description": "Quarters on [-1, 1] with a negative target: near-tick snapping, half-way ties rounding toward +infinity, the mirror tick, and clamping at both ends.",
+  "payload": {
+    "prompt": "Drag the point to -1/2",
+    "min": -1,
+    "max": 1,
+    "step": 0.25,
+    "target": "-1/2"
+  },
+  "answer": -0.5,
+  "cases": [
+    { "response": -0.5, "canonical": 2, "verdict": "correct" },
+    { "response": -0.6, "canonical": 2, "verdict": "correct" },
+    { "response": -0.4, "canonical": 2, "verdict": "correct" },
+    { "response": -0.625, "canonical": 2, "verdict": "correct" },
+    { "response": -0.375, "canonical": 3, "verdict": "wrong" },
+    { "response": -0.875, "canonical": 1, "verdict": "wrong" },
+    { "response": 0.5, "canonical": 6, "verdict": "wrong" },
+    { "response": -2, "canonical": 0, "verdict": "wrong" },
+    { "response": 1.5, "canonical": 8, "verdict": "wrong" }
+  ]
+}

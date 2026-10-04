@@ -1,5 +1,6 @@
 package app.mathjourney.content;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -10,7 +11,9 @@ import org.springframework.stereotype.Service;
 
 /**
  * Loads and validates all content under {@code app.content-root} at startup. Any error stops the
- * application from starting (AD-5): each one is logged with its file and JSON path first.
+ * application from starting (AD-5): each one is logged with its file and JSON path first. Answers
+ * are verified by the {@link AnswerVerifier} beans, which Spring creates before this catalog, so
+ * validation still runs before Flyway ({@link ContentBeforeFlywayConfiguration}).
  */
 @Service
 class ContentCatalog implements ConceptCatalog {
@@ -19,8 +22,12 @@ class ContentCatalog implements ConceptCatalog {
 
 	private final Map<String, CatalogConcept> conceptsById;
 
-	ContentCatalog(@Value("${app.content-root}") String contentRoot) {
-		ContentLoader.Result result = new ContentLoader(contentRoot).load();
+	/**
+	 * @param contentRoot where the content lives
+	 * @param verifiers every {@link AnswerVerifier} bean, one per activity kind (AD-6)
+	 */
+	ContentCatalog(@Value("${app.content-root}") String contentRoot, List<AnswerVerifier> verifiers) {
+		ContentLoader.Result result = new ContentLoader(contentRoot, ContentLoader.byKind(verifiers)).load();
 		if (!result.errors().isEmpty()) {
 			result.errors().forEach((error) -> log.error("{}", error));
 			throw new ContentValidationException(result.errors());
