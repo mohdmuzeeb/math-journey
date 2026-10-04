@@ -1,0 +1,139 @@
+/* Page, activity card, primary button, feedback strip and number line.
+   Values come only from tokens.css. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-family);
+  font-size: var(--font-body-size);
+  font-weight: var(--font-body-weight);
+  line-height: var(--font-body-line-height);
+}
+
+.page {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-page-gutter);
+}
+
+/* Activity card */
+.card {
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+}
+
+.card-title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-title-size);
+  font-weight: var(--font-title-weight);
+  line-height: var(--font-title-line-height);
+}
+
+.activity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.activity-prompt {
+  margin: 0;
+  color: var(--color-ink);
+}
+
+.activity-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Primary button */
+.button-primary {
+  min-height: var(--size-touch-min);
+  padding: var(--space-3) var(--space-5);
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-label-size);
+  font-weight: var(--font-label-weight);
+  line-height: var(--font-label-line-height);
+  cursor: pointer;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--color-primary-strong);
+}
+
+.button-primary:focus-visible {
+  outline: var(--border-width) solid var(--color-primary-strong);
+  outline-offset: var(--border-width);
+}
+
+.button-primary:disabled {
+  background: var(--color-border);
+  color: var(--color-ink-muted);
+  cursor: not-allowed;
+}
+
+/* Feedback strip: under the activity, never over it */
+.feedback {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+}
+
+.feedback:focus-visible {
+  outline: var(--border-width) solid currentColor;
+  outline-offset: var(--border-width);
+}
+
+.feedback--correct {
+  background: var(--color-success-surface);
+  color: var(--color-success-ink);
+}
+
+.feedback--nudge {
+  background: var(--color-nudge-surface);
+  color: var(--color-nudge-ink);
+}
+
+/* Number line */
+.number-line {
+  display: block;
+  width: 100%;
+  touch-action: none;
+  user-select: none;
+}
+
+.number-line__axis,
+.number-line__tick {
+  stroke: var(--color-ink);
+  stroke-width: var(--border-width);
+}
+
+.number-line__label {
+  fill: var(--color-ink-muted);
+  font-family: var(--font-family);
+  font-size: var(--font-label-size);
+  font-weight: var(--font-label-weight);
+}
+
+.number-line__point {
+  fill: var(--color-primary);
+  stroke: var(--color-surface-raised);
+  stroke-width: var(--border-width);
+  cursor: grab;
+}
+
+.number-line__point--dragging {
+  fill: var(--color-primary-strong);
+  filter: drop-shadow(var(--shadow-drag));
+  cursor: grabbing;
+}

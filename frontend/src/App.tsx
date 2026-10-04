@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { fetchConcept, type Concept } from './api.ts'
-import { NumberLine } from './NumberLine.tsx'
-import { isCorrect, type NumberLinePayload } from './numberLine.ts'
+import { Activity } from './Activity.tsx'
 
 const CONCEPT_ID = 'demo-number-line'
 
@@ -13,7 +12,6 @@ type LoadState =
 
 function App() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
-  const [feedback, setFeedback] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -29,30 +27,25 @@ function App() {
     }
   }, [])
 
-  if (state.status === 'loading') return <main><p>Loading…</p></main>
-  if (state.status === 'missing') return <main><p>No lesson yet</p></main>
-  if (state.status === 'error') return <main><p>Something went wrong loading the lesson. Please try again.</p></main>
+  if (state.status === 'loading') return <Page><p>Loading…</p></Page>
+  if (state.status === 'missing') return <Page><p>No lesson yet</p></Page>
+  if (state.status === 'error') return <Page><p>Something went wrong loading the lesson. Please try again.</p></Page>
 
   const item = state.concept.items[0]
-  if (!item) return <main><p>No lesson yet</p></main>
-  // Payloads are opaque in the API contract (AD-7); their types will come from the content schemas.
-  const payload = item.payload as unknown as NumberLinePayload
-  const answer = item.answer as number
+  if (!item) return <Page><p>No lesson yet</p></Page>
 
   return (
-    <main>
-      <h1>{state.concept.title}</h1>
-      <p>{payload.prompt}</p>
-      <NumberLine
-        min={payload.min}
-        max={payload.max}
-        step={payload.step}
-        onDragStart={() => setFeedback('')}
-        onAnswer={(value) => setFeedback(isCorrect(value, payload, answer) ? 'Correct!' : 'Not quite — try again')}
-      />
-      <p aria-live="polite">{feedback}</p>
-    </main>
+    <Page>
+      <section className="card">
+        <h1 className="card-title">{state.concept.title}</h1>
+        <Activity key={item.id} item={item} />
+      </section>
+    </Page>
   )
+}
+
+function Page({ children }: { children: ReactNode }) {
+  return <main className="page">{children}</main>
 }
 
 export default App

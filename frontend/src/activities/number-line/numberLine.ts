@@ -1,14 +1,11 @@
 // Pure number-line helpers. The browser does no math evaluation (AD-3): a drop is snapped
 // to a grid tick and compared with the stored answer by tick index, never by float equality.
 
-export interface NumberLinePayload {
-  prompt: string
-  min: number
-  max: number
-  step: number
-  /** The problem's exact value, e.g. "3/4" */
-  target: string
-}
+// The payload and answer types are generated from content/schemas/number-line.schema.json (AD-7).
+import type { Answer, Payload } from '../../content-types/number-line.d.ts'
+
+export type NumberLinePayload = Payload
+export type NumberLineAnswer = Answer
 
 /** Index of the last tick on the line. */
 export function lastTickIndex(min: number, max: number, step: number): number {
@@ -27,7 +24,7 @@ export function tickValue(index: number, min: number, step: number): number {
 }
 
 /** True when the drop lands on the same tick as the expected answer. */
-export function isCorrect(dropValue: number, payload: NumberLinePayload, answer: number): boolean {
+export function isCorrect(dropValue: number, payload: NumberLinePayload, answer: NumberLineAnswer): boolean {
   const { min, max, step } = payload
   return snap(dropValue, min, max, step) === snap(answer, min, max, step)
 }

@@ -5,3 +5,4 @@ frontend/node/
 .idea/
 .DS_Store
 frontend/src/api/schema.d.ts
+frontend/src/content-types/
