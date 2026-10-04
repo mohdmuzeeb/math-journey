@@ -44,6 +44,7 @@ class OpenApiExportTest {
 			.getContentAsString(StandardCharsets.UTF_8);
 		JsonNode document = this.objectMapper.readTree(body);
 		assertThat(document.at("/components/schemas/ConceptResponse").isMissingNode()).isFalse();
+		assertThat(document.at("/components/schemas/LearnerResponse").isMissingNode()).isFalse();
 
 		String pretty = this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(document) + "\n";
 		Files.writeString(TARGET, pretty, StandardCharsets.UTF_8);

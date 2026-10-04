@@ -4,7 +4,18 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  # AD-17: the learner's data lives outside the jar, so replacing the jar keeps it
+  datasource:
+    url: jdbc:h2:file:${app.data-dir}/mathjourney;DB_CLOSE_ON_EXIT=FALSE
+  # AD-11: Flyway owns the schema; Hibernate only checks it
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
 
 server:
   address: 127.0.0.1
   port: 8080
+
+app:
+  data-dir: ${user.home}/.mathjourney

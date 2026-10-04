@@ -1,0 +1,3 @@
+# Keeps tests run outside Maven (e.g. from the IDE) away from ~/.mathjourney; merged over the main application.yml.
+app:
+  data-dir: ${user.dir}/target/test-data

@@ -9,6 +9,24 @@
     "description" : "Generated server url"
   } ],
   "paths" : {
+    "/api/learner" : {
+      "get" : {
+        "tags" : [ "learner-controller" ],
+        "operationId" : "learner",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LearnerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/concepts/{id}" : {
       "get" : {
         "tags" : [ "concept-controller" ],
@@ -38,6 +56,33 @@
   },
   "components" : {
     "schemas" : {
+      "LearnerResponse" : {
+        "type" : "object",
+        "description" : "The learner profile",
+        "properties" : {
+          "onboardingStage" : {
+            "type" : "string",
+            "enum" : [ "welcome", "prereq-check", "journey" ]
+          },
+          "settings" : {
+            "$ref" : "#/components/schemas/LearnerSettingsResponse"
+          }
+        },
+        "required" : [ "onboardingStage", "settings" ]
+      },
+      "LearnerSettingsResponse" : {
+        "type" : "object",
+        "description" : "The learner's settings",
+        "properties" : {
+          "sound" : {
+            "type" : "boolean"
+          },
+          "companionName" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "companionName", "sound" ]
+      },
       "ConceptItemResponse" : {
         "type" : "object",
         "description" : "One activity item of a concept",

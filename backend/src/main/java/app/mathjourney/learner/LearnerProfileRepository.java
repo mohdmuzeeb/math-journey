@@ -1,0 +1,9 @@
+package app.mathjourney.learner;
+
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+interface LearnerProfileRepository extends JpaRepository<LearnerProfile, UUID> {
+
+}
